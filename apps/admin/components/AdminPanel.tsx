@@ -459,7 +459,9 @@ function HistoryView({ groups }: { groups: Group[] }) {
                     : '—';
                   return (
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                        {idx + 1}
+                      </td>
                       <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
                         🕒 {timeStr}
                       </td>
@@ -619,6 +621,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
         const students = groupStudents[group.id] || [];
         const isLoading = loadingGroup[group.id];
 
+        const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
         const leaderName = group.leader
           ? `${group.leader.first_name} ${group.leader.last_name}`.trim()
           : 'Tayinlanmagan';
@@ -650,10 +653,15 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                 <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-                    {group.name} <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
+                    {group.name}{' '}
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    👨‍🏫 Rahbar: <b>{leaderName}</b>
+                    {isStatusGroup ? (
+                      <span style={{ color: '#38bdf8', fontWeight: 600 }}>📌 Maxsus status guruhi</span>
+                    ) : (
+                      <span>👨‍🏫 Rahbar: <b>{leaderName}</b></span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -676,7 +684,9 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 
             {/* Collapsible Content Body */}
             {isExpanded && (
-              <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
+              <div
+                style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
+              >
                 <div
                   style={{
                     display: 'flex',
@@ -705,28 +715,69 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <div className="spinner" style={{ margin: '0 auto' }} />
                   </div>
                 ) : students.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
+                  <p
+                    style={{
+                      textAlign: 'center',
+                      color: 'var(--text-muted)',
+                      fontSize: 13,
+                      padding: 20,
+                    }}
+                  >
                     Ushbu guruhda hali talabalar yo'q.
                   </p>
                 ) : (
-                  <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
+                  <div
+                    style={{
+                      overflowX: 'auto',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                    }}
+                  >
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              width: 60,
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            T/R
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            Guruhi
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
+                          <tr
+                            key={s.id}
+                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
+                          >
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                              {idx + 1}
+                            </td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
+                              {group.name}
+                            </td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
+                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                                `${s.user?.first_name || ''}`}
                             </td>
                           </tr>
                         ))}
@@ -759,6 +810,7 @@ function GroupCard({
   onViewDetail: () => void;
   onDelete: () => void;
 }) {
+  const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
   const leaderName = group.leader
     ? `${group.leader.first_name} ${group.leader.last_name}`.trim()
     : null;
@@ -770,14 +822,16 @@ function GroupCard({
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
-          marginBottom: 12,
+          marginBottom: isStatusGroup ? 14 : 12,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
             className="avatar"
             style={{
-              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+              background: isStatusGroup
+                ? 'linear-gradient(135deg, #475569, #64748b)'
+                : 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
             }}
           >
             {group.name.charAt(0)}
@@ -787,68 +841,48 @@ function GroupCard({
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{group.code}</p>
           </div>
         </div>
-        <span className={`badge ${group.leader_id ? 'badge-green' : 'badge-yellow'}`}>
-          {group.leader_id ? '✓ Rahbar bor' : '⏳ Kutilmoqda'}
-        </span>
+        {isStatusGroup ? (
+          <span className="badge badge-blue">📌 Maxsus status</span>
+        ) : (
+          <span className={`badge ${group.leader_id ? 'badge-green' : 'badge-yellow'}`}>
+            {group.leader_id ? '✓ Rahbar bor' : '⏳ Kutilmoqda'}
+          </span>
+        )}
       </div>
 
-      {/* Leader Info */}
-      <div
-        style={{
-          background: leaderName ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
-          border: leaderName ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(245,158,11,0.2)',
-          borderRadius: 10,
-          padding: '10px 14px',
-          marginBottom: 12,
-        }}
-      >
-        <p style={{ fontSize: 11, color: leaderName ? '#34d399' : '#fbbf24', fontWeight: 600 }}>
-          GURUH RAHBARI:
-        </p>
-        <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#fff' }}>
-          {leaderName || 'Rahbar tayinlanmagan'}
-        </p>
-      </div>
-
-      {/* Login Code Box */}
-      <div
-        style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid var(--border)',
-          borderRadius: 10,
-          padding: '8px 12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 14,
-        }}
-      >
-        <div>
-          <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>LOGIN KOD</p>
-          <code style={{ fontSize: 18, fontWeight: 800, color: '#fbbf24', letterSpacing: 2 }}>
-            {group.login_code || '------'}
-          </code>
-        </div>
-        <button
-          className="btn btn-ghost btn-sm"
-          style={{ color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)' }}
-          onClick={() => onCopy(group.login_code)}
+      {/* Leader Info (Only for active academic groups) */}
+      {!isStatusGroup && (
+        <div
+          style={{
+            background: leaderName ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
+            border: leaderName ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(245,158,11,0.2)',
+            borderRadius: 10,
+            padding: '10px 14px',
+            marginBottom: 12,
+          }}
         >
-          {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
-        </button>
-      </div>
+          <p style={{ fontSize: 11, color: leaderName ? '#34d399' : '#fbbf24', fontWeight: 600 }}>
+            GURUH RAHBARI:
+          </p>
+          <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#fff' }}>
+            {leaderName || 'Rahbar tayinlanmagan'}
+          </p>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={onViewDetail}>
           👥 Boshqarish
         </button>
-        <button
-          className="btn btn-danger btn-sm"
-          style={{ padding: '6px 12px' }}
-          onClick={onDelete}
-        >
-          🗑️
-        </button>
+        {!isStatusGroup && (
+          <button
+            className="btn btn-danger btn-sm"
+            style={{ padding: '6px 12px' }}
+            onClick={onDelete}
+          >
+            🗑️
+          </button>
+        )}
       </div>
     </div>
   );
@@ -885,6 +919,7 @@ function GroupDetailModal({
     group.leader ? `${group.leader.first_name} ${group.leader.last_name}`.trim() : '',
   );
   const [updatingLeader, setUpdatingLeader] = useState(false);
+  const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
 
   useEffect(() => {
     fetchStudents();
@@ -1019,83 +1054,93 @@ function GroupDetailModal({
             </form>
           </div>
 
-          {/* Edit Leader Name */}
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid var(--border)',
-              borderRadius: 12,
-              padding: 14,
-            }}
-          >
-            <label className="form-label" style={{ marginBottom: 6 }}>
-              👨‍🏫 Guruh Rahbari (F.I.Sh)
-            </label>
-            <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
-              <input
-                className="input"
-                style={{ flex: 1 }}
-                placeholder="Masalan: Sardor Aliyev"
-                value={leaderNameInput}
-                onChange={(e) => setLeaderNameInput(e.target.value)}
-              />
-              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader}>
-                {updatingLeader ? '⏳' : '✓ Saqlash'}
-              </button>
-            </form>
-          </div>
-
-          {/* Login Code Card */}
-          <div
-            style={{
-              background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.2)',
-              borderRadius: 12,
-              padding: 14,
-            }}
-          >
+          {/* Edit Leader Name (Only for active academic groups) */}
+          {!isStatusGroup && (
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 4,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: 14,
               }}
             >
-              <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>🔑 LOGIN KOD</p>
-              <button
-                className="btn btn-ghost btn-sm"
-                style={{ fontSize: 10, color: 'var(--accent-red)' }}
-                onClick={regenerateCode}
-                disabled={regenerating}
-              >
-                🔄 Yangilash
-              </button>
+              <label className="form-label" style={{ marginBottom: 6 }}>
+                👨‍🏫 Guruh Rahbari (F.I.Sh)
+              </label>
+              <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="input"
+                  style={{ flex: 1 }}
+                  placeholder="Masalan: Sardor Aliyev"
+                  value={leaderNameInput}
+                  onChange={(e) => setLeaderNameInput(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader}>
+                  {updatingLeader ? '⏳' : '✓ Saqlash'}
+                </button>
+              </form>
             </div>
+          )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <code
-                style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: '#fbbf24', flex: 1 }}
-              >
-                {group.login_code || '------'}
-              </code>
-              <button
-                className="btn btn-sm"
+          {/* Login Code Card (Only for active academic groups) */}
+          {!isStatusGroup && (
+            <div
+              style={{
+                background: 'rgba(245,158,11,0.08)',
+                border: '1px solid rgba(245,158,11,0.2)',
+                borderRadius: 12,
+                padding: 14,
+              }}
+            >
+              <div
                 style={{
-                  background:
-                    copiedCode === group.login_code
-                      ? 'rgba(16,185,129,0.2)'
-                      : 'rgba(245,158,11,0.2)',
-                  color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
-                  border: 'none',
-                  fontSize: 12,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 4,
                 }}
-                onClick={() => onCopy(group.login_code)}
               >
-                {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
-              </button>
+                <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>🔑 LOGIN KOD</p>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  style={{ fontSize: 10, color: 'var(--accent-red)' }}
+                  onClick={regenerateCode}
+                  disabled={regenerating}
+                >
+                  🔄 Yangilash
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <code
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 900,
+                    letterSpacing: 4,
+                    color: '#fbbf24',
+                    flex: 1,
+                  }}
+                >
+                  {group.login_code || '------'}
+                </code>
+                <button
+                  className="btn btn-sm"
+                  style={{
+                    background:
+                      copiedCode === group.login_code
+                        ? 'rgba(16,185,129,0.2)'
+                        : 'rgba(245,158,11,0.2)',
+                    color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
+                    border: 'none',
+                    fontSize: 12,
+                  }}
+                  onClick={() => onCopy(group.login_code)}
+                >
+                  {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Students Section */}
@@ -1139,13 +1184,25 @@ function GroupDetailModal({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>
+                    <th
+                      style={{
+                        padding: '12px 16px',
+                        width: 50,
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
                       T/R
                     </th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
+                    <th
+                      style={{
+                        padding: '12px 16px',
+                        textAlign: 'right',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
                       Amallar
                     </th>
                   </tr>
@@ -1598,7 +1655,9 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <label className="form-label">
+                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+              </label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"

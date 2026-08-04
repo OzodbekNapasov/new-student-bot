@@ -148,7 +148,7 @@ export default function Home() {
           </h2>
           <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.6, marginBottom: 24 }}>
             Guruh rahbari bo'lsangiz — admindan olgan <b>Login kodingizni</b> (masalan:{' '}
-            <code>AB3K7Z</code>) kiriting.
+            <code>X7K9P2</code>) kiriting.
             <br />
             Admin bo'lsangiz — <b>Telegram IDingizni</b> kiriting.
           </p>
