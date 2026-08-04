@@ -430,9 +430,11 @@ export default function GroupLeaderPanel({ user }: Props) {
                       <p style={{ fontWeight: 600, fontSize: 14 }}>
                         {s.user?.first_name} {s.user?.last_name}
                       </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {s.user?.username ? `@${s.user.username}` : `ID: ${s.user?.telegram_id}`}
-                      </p>
+                      {s.student_card_number && (
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          Guvohnoma: {s.student_card_number}
+                        </p>
+                      )}
                     </div>
                     <span className={`badge ${s.is_active ? 'badge-green' : 'badge-red'}`}>
                       {s.is_active ? 'Faol' : 'Nofaol'}

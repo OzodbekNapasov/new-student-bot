@@ -606,9 +606,11 @@ function GroupDetailModal({
                     <p style={{ fontSize: 13, fontWeight: 600 }}>
                       {s.user?.first_name} {s.user?.last_name}
                     </p>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      {s.user?.username ? `@${s.user.username}` : `ID: ${s.user?.telegram_id}`}
-                    </p>
+                    {s.student_card_number && (
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        Guvohnoma: {s.student_card_number}
+                      </p>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button

@@ -122,20 +122,23 @@ bot.start(async (ctx) => {
 
   // Check if admin
   if (String(tgUser.id) === '8135594558') {
-    await supabase.from('users').update({ role: 'SUPER_ADMIN' }).eq('telegram_id', String(tgUser.id));
-    await ctx.reply(
-      `👑 *Xush kelibsiz, Admin!*\n\nKerakli bo'limni tanlang:`,
-      { parse_mode: 'Markdown', ...getRoleKeyboard('SUPER_ADMIN') },
-    );
+    await supabase
+      .from('users')
+      .update({ role: 'SUPER_ADMIN' })
+      .eq('telegram_id', String(tgUser.id));
+    await ctx.reply(`👑 *Xush kelibsiz, Admin!*\n\nKerakli bo'limni tanlang:`, {
+      parse_mode: 'Markdown',
+      ...getRoleKeyboard('SUPER_ADMIN'),
+    });
     return;
   }
 
   // If GROUP_LEADER
   if (user?.role === 'GROUP_LEADER') {
-    await ctx.reply(
-      `👨‍🏫 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`,
-      { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
-    );
+    await ctx.reply(`👨‍🏫 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
+      parse_mode: 'Markdown',
+      ...getRoleKeyboard('GROUP_LEADER'),
+    });
     return;
   }
 
@@ -148,10 +151,10 @@ bot.start(async (ctx) => {
       .single();
 
     if (studentRecord) {
-      await ctx.reply(
-        `🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`,
-        { parse_mode: 'Markdown', ...getRoleKeyboard('STUDENT') },
-      );
+      await ctx.reply(`🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
+        parse_mode: 'Markdown',
+        ...getRoleKeyboard('STUDENT'),
+      });
       return;
     }
   }
@@ -220,10 +223,14 @@ bot.hears("👥 Talabalar ro'yxati", async (ctx) => {
     return;
   }
 
-  const { data: group } = await supabase.from('groups').select('*').eq('leader_id', user.id).single();
+  const { data: group } = await supabase
+    .from('groups')
+    .select('*')
+    .eq('leader_id', user.id)
+    .single();
 
   if (!group) {
-    await ctx.reply("⚠️ Sizga hali guruh biriktirilmagan.");
+    await ctx.reply('⚠️ Sizga hali guruh biriktirilmagan.');
     return;
   }
 
@@ -261,13 +268,15 @@ bot.hears("📚 Guruhlar ro'yxati", async (ctx) => {
     .order('created_at', { ascending: false });
 
   if (!groups || groups.length === 0) {
-    await ctx.reply("📂 Guruhlar topilmadi.");
+    await ctx.reply('📂 Guruhlar topilmadi.');
     return;
   }
 
   let text = `📚 *Barcha Guruhlar Ro'yxati:* (${groups.length} ta)\n\n`;
   groups.forEach((g, idx) => {
-    const leaderName = g.leader ? `${g.leader.first_name} ${g.leader.last_name}`.trim() : ' Kutilmoqda...';
+    const leaderName = g.leader
+      ? `${g.leader.first_name} ${g.leader.last_name}`.trim()
+      : ' Kutilmoqda...';
     const studentCount = g.students?.[0]?.count || 0;
     text += `${idx + 1}. *${g.name}* (${g.code})\n`;
     text += `   👨‍🏫 Rahbar: ${leaderName}\n`;
@@ -279,7 +288,7 @@ bot.hears("📚 Guruhlar ro'yxati", async (ctx) => {
 });
 
 // 👥 Barcha talabalar (Admin)
-bot.hears("👥 Barcha talabalar", async (ctx) => {
+bot.hears('👥 Barcha talabalar', async (ctx) => {
   const telegramId = String(ctx.from.id);
   if (telegramId !== '8135594558') return;
 
@@ -310,7 +319,7 @@ bot.hears("👥 Barcha talabalar", async (ctx) => {
 });
 
 // 📚 Mening guruhim (Student)
-bot.hears("📚 Mening guruhim", async (ctx) => {
+bot.hears('📚 Mening guruhim', async (ctx) => {
   const telegramId = String(ctx.from.id);
   const user = await getUser(telegramId);
 
@@ -323,7 +332,7 @@ bot.hears("📚 Mening guruhim", async (ctx) => {
     .single();
 
   if (!studentRecord || !studentRecord.group) {
-    await ctx.reply("⚠️ Siz hali biror guruhga biriktirilmagansiz.");
+    await ctx.reply('⚠️ Siz hali biror guruhga biriktirilmagansiz.');
     return;
   }
 
@@ -334,7 +343,7 @@ bot.hears("📚 Mening guruhim", async (ctx) => {
 bot.command('cancel', async (ctx) => {
   await setState(String(ctx.from.id), null);
   const user = await getUser(String(ctx.from.id));
-  await ctx.reply("❌ Amaliyot bekor qilindi.", getRoleKeyboard(user?.role || 'STUDENT'));
+  await ctx.reply('❌ Amaliyot bekor qilindi.', getRoleKeyboard(user?.role || 'STUDENT'));
 });
 
 // ============================================================
@@ -460,7 +469,7 @@ bot.on('text', async (ctx) => {
   // Default menu reply
   const user = await getUser(telegramId);
   if (user) {
-    await ctx.reply('Kerakli bo\'limni tanlang:', getRoleKeyboard(user.role));
+    await ctx.reply("Kerakli bo'limni tanlang:", getRoleKeyboard(user.role));
   } else {
     await setState(telegramId, 'WAITING_LOGIN_CODE');
     await ctx.reply('🔑 Login kodingizni yuboring:', getRoleKeyboard('STUDENT'));
@@ -482,5 +491,8 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  return NextResponse.json({ status: 'Telegram Bot Webhook Active ✅', version: '4.0-bot-login-logout' });
+  return NextResponse.json({
+    status: 'Telegram Bot Webhook Active ✅',
+    version: '4.0-bot-login-logout',
+  });
 }
