@@ -41,6 +41,7 @@ import {
   Sparkles,
   Layers,
   CheckCircle2,
+  PieChart,
 } from 'lucide-react';
 
 // ============================================================
@@ -68,7 +69,12 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  worksheet['!cols'] = [{ wch: 8 }, { wch: 22 }, { wch: 45 }, { wch: 24 }];
+  worksheet['!cols'] = [
+    { wch: 8 },
+    { wch: 22 },
+    { wch: 45 },
+    { wch: 24 },
+  ];
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Talabalar');
@@ -79,13 +85,19 @@ function exportLogsToExcel(events: any[], title: string = 'Tarix_Log') {
   const data = events.map((e, i) => ({
     'T/R': i + 1,
     Vaqti: e.timeStr || '—',
-    'Amal Turi': e.typeLabel || "O'zgarish",
+    'Amal Turi': e.typeLabel || 'O\'zgarish',
     'Talabaning Familiyasi, Ismi va Sharifi': e.student_name,
     Tafsilot: e.details,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  worksheet['!cols'] = [{ wch: 8 }, { wch: 12 }, { wch: 24 }, { wch: 45 }, { wch: 45 }];
+  worksheet['!cols'] = [
+    { wch: 8 },
+    { wch: 12 },
+    { wch: 24 },
+    { wch: 45 },
+    { wch: 45 },
+  ];
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tarix_Log');
@@ -229,41 +241,25 @@ export default function AdminPanel({ user }: { user: User }) {
             className={`tab ${tab === 'groups' ? 'active' : ''}`}
             onClick={() => setTab('groups')}
           >
-            <BookOpen
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Guruhlar
+            <BookOpen size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Guruhlar
           </button>
           <button
             className={`tab ${tab === 'accordion' ? 'active' : ''}`}
             onClick={() => setTab('accordion')}
           >
-            <Users
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Yig'ma Ro'yxat
+            <Users size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Yig'ma Ro'yxat
           </button>
           <button
             className={`tab ${tab === 'history' ? 'active' : ''}`}
             onClick={() => setTab('history')}
           >
-            <History
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Tarix va Log
+            <History size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Tarix va Log
           </button>
           <button
             className={`tab ${tab === 'stats' ? 'active' : ''}`}
             onClick={() => setTab('stats')}
           >
-            <BarChart3
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Statistika
+            <BarChart3 size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Statistika
           </button>
         </div>
       </div>
@@ -287,15 +283,7 @@ export default function AdminPanel({ user }: { user: User }) {
               }}
             >
               <div>
-                <h2
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
+                <h2 style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Layers size={22} style={{ color: '#38bdf8' }} /> Guruhlar Boshqaruvi
                 </h2>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -305,12 +293,7 @@ export default function AdminPanel({ user }: { user: User }) {
 
               <button
                 className="btn btn-primary"
-                style={{
-                  padding: '10px 18px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
+                style={{ padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 onClick={() => setShowAddGroup(true)}
               >
                 <Plus size={18} /> Yangi guruh qo'shish
@@ -367,20 +350,15 @@ export default function AdminPanel({ user }: { user: User }) {
 
                 {/* 2. Special Status Groups Section */}
                 {statusGroups.length > 0 && (
-                  <div
-                    style={{ marginTop: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}
-                  >
-                    <div
-                      style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}
-                    >
+                  <div style={{ marginTop: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+                    <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Bookmark size={18} style={{ color: '#fbbf24' }} />
                       <div>
                         <h3 style={{ fontSize: 16, fontWeight: 700 }}>
                           Maxsus Status Guruhlari (Akademik & Safdan Chiqqanlar)
                         </h3>
                         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          Boshqa guruhlardan o'tkazilgan talabalar jamlanmasi (Rahbar talab
-                          qilinmaydi)
+                          Boshqa guruhlardan o'tkazilgan talabalar jamlanmasi (Rahbar talab qilinmaydi)
                         </p>
                       </div>
                     </div>
@@ -689,8 +667,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                 gap: 8,
               }}
             >
-              <Clock size={18} style={{ color: '#fbbf24' }} /> {selectedDate} sanasidagi
-              o'zgarishlar ({dayEvents.length} ta)
+              <Clock size={18} style={{ color: '#fbbf24' }} /> {selectedDate} sanasidagi o'zgarishlar ({dayEvents.length} ta)
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               Ushbu kunda qo'shilgan va boshqa guruhlarga/statuslarga ko'chirilgan talabalar logi
@@ -778,16 +755,19 @@ function HistoryView({ groups }: { groups: Group[] }) {
               </thead>
               <tbody>
                 {dayEvents.map((ev, idx) => (
-                  <tr
-                    key={ev.id || idx}
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                  >
-                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                  <tr key={ev.id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                      {idx + 1}
+                    </td>
                     <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
                       {ev.timeStr}
                     </td>
-                    <td style={{ padding: '10px 14px' }}>{renderEventTypeBadge(ev)}</td>
-                    <td style={{ padding: '10px 14px', fontWeight: 700 }}>{ev.student_name}</td>
+                    <td style={{ padding: '10px 14px' }}>
+                      {renderEventTypeBadge(ev)}
+                    </td>
+                    <td style={{ padding: '10px 14px', fontWeight: 700 }}>
+                      {ev.student_name}
+                    </td>
                     <td style={{ padding: '10px 14px', color: '#38bdf8', fontWeight: 600 }}>
                       {ev.details}
                     </td>
@@ -843,8 +823,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                     <Calendar size={16} /> {month}
                   </h4>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    Jami qo'shilgan talabalar:{' '}
-                    <b style={{ color: '#34d399' }}>{item.count} nafar</b>
+                    Jami qo'shilgan talabalar: <b style={{ color: '#34d399' }}>{item.count} nafar</b>
                   </p>
                 </div>
                 <button
@@ -873,13 +852,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
 // ============================================================
 // Accordion Students View
 // ============================================================
-function AccordionStudentsView({
-  groups,
-  onGroupUpdated,
-}: {
-  groups: Group[];
-  onGroupUpdated: () => void;
-}) {
+function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; onGroupUpdated: () => void }) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(groups[0]?.id || null);
   const [groupStudents, setGroupStudents] = useState<Record<string, Student[]>>({});
   const [loadingGroup, setLoadingGroup] = useState<Record<string, boolean>>({});
@@ -1238,7 +1211,13 @@ function AccordionStudentsView({
 // ============================================================
 // Group Card Component
 // ============================================================
-function GroupCard({ group, onViewDetail }: { group: Group; onViewDetail: () => void }) {
+function GroupCard({
+  group,
+  onViewDetail,
+}: {
+  group: Group;
+  onViewDetail: () => void;
+}) {
   const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
   const leaderName = group.leader
     ? `${group.leader.first_name} ${group.leader.last_name}`.trim()
@@ -1345,9 +1324,7 @@ function GroupCard({ group, onViewDetail }: { group: Group; onViewDetail: () => 
         )}
       </div>
 
-      <div
-        style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
-      >
+      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 600 }}>Boshqarish ➔</span>
       </div>
     </div>
@@ -1385,9 +1362,7 @@ function GroupDetailModal({
   const [groupNameInput, setGroupNameInput] = useState(initialGroup.name);
   const [updatingGroupName, setUpdatingGroupName] = useState(false);
   const [leaderNameInput, setLeaderNameInput] = useState(
-    initialGroup.leader
-      ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim()
-      : '',
+    initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
   );
   const [updatingLeader, setUpdatingLeader] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -1398,9 +1373,7 @@ function GroupDetailModal({
     setCurrentGroup(initialGroup);
     setGroupNameInput(initialGroup.name);
     setLeaderNameInput(
-      initialGroup.leader
-        ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim()
-        : '',
+      initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
     );
   }, [initialGroup]);
 
@@ -1442,10 +1415,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Guruh nomi jonli saqlandi!');
+        showToast("Guruh nomi jonli saqlandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingGroupName(false);
     }
@@ -1467,10 +1440,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Guruh rahbari jonli saqlandi!');
+        showToast("Guruh rahbari jonli saqlandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingLeader(false);
     }
@@ -1491,10 +1464,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Login kod yangilandi!');
+        showToast("Login kod yangilandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setRegenerating(false);
     }
@@ -1504,13 +1477,7 @@ function GroupDetailModal({
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
         className="modal"
-        style={{
-          width: '92%',
-          maxWidth: 860,
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          position: 'relative',
-        }}
+        style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}
       >
         {toastMsg && (
           <div
@@ -1563,9 +1530,7 @@ function GroupDetailModal({
             </div>
             <div>
               <h2 style={{ fontSize: 22, fontWeight: 800 }}>{currentGroup.name} Boshqaruvi</h2>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Guruh kodi: {currentGroup.code}
-              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {currentGroup.code}</p>
             </div>
           </div>
 
@@ -1573,13 +1538,7 @@ function GroupDetailModal({
             {!isStatusGroup && (
               <button
                 className="btn btn-danger btn-sm"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: 13,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                style={{ padding: '6px 12px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 onClick={() => onDeleteGroup(currentGroup.id)}
               >
                 <Trash2 size={15} /> Guruhni O'chirish
@@ -1610,14 +1569,7 @@ function GroupDetailModal({
           >
             <label
               className="form-label"
-              style={{
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                color: '#94a3b8',
-              }}
+              style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
             >
               <Edit3 size={15} style={{ color: '#38bdf8' }} /> GURUH NOMI (TO'LIQ O'ZGARTIRISH)
             </label>
@@ -1633,13 +1585,7 @@ function GroupDetailModal({
                 type="submit"
                 className="btn btn-primary btn-sm"
                 disabled={updatingGroupName}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 16px',
-                  borderRadius: 10,
-                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
               >
                 {updatingGroupName ? (
                   <Loader2 className="spinner-icon" size={14} />
@@ -1663,14 +1609,7 @@ function GroupDetailModal({
             >
               <label
                 className="form-label"
-                style={{
-                  marginBottom: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 12,
-                  color: '#94a3b8',
-                }}
+                style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
               >
                 <UserCheck size={15} style={{ color: '#34d399' }} /> GURUH RAHBARI (F.I.SH)
               </label>
@@ -1686,13 +1625,7 @@ function GroupDetailModal({
                   type="submit"
                   className="btn btn-primary btn-sm"
                   disabled={updatingLeader}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '8px 16px',
-                    borderRadius: 10,
-                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
                 >
                   {updatingLeader ? (
                     <Loader2 className="spinner-icon" size={14} />
@@ -1723,27 +1656,12 @@ function GroupDetailModal({
                   marginBottom: 6,
                 }}
               >
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: '#fbbf24',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
-                >
+                <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Key size={13} /> LOGIN KOD
                 </p>
                 <button
                   className="btn btn-ghost btn-sm"
-                  style={{
-                    fontSize: 11,
-                    color: '#ef4444',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
+                  style={{ fontSize: 11, color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   onClick={regenerateCode}
                   disabled={regenerating}
                 >
@@ -1806,34 +1724,17 @@ function GroupDetailModal({
               marginBottom: 12,
             }}
           >
-            <h3
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <Users size={18} style={{ color: '#38bdf8' }} /> Guruh Talabalari ({students.length}{' '}
-              nafar)
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={18} style={{ color: '#38bdf8' }} /> Guruh Talabalari ({students.length} nafar)
             </h3>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => setShowAddStudent(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
+            <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <Plus size={16} /> Talaba Qo'shish
             </button>
           </div>
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 30 }}>
-              <Loader2
-                className="spinner-icon"
-                size={32}
-                style={{ margin: '0 auto', color: '#38bdf8' }}
-              />
+              <Loader2 className="spinner-icon" size={32} style={{ margin: '0 auto', color: '#38bdf8' }} />
             </div>
           ) : students.length === 0 ? (
             <div
@@ -1854,25 +1755,11 @@ function GroupDetailModal({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        width: 50,
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
-                      T/R
-                    </th>
+                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        textAlign: 'right',
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
+                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
                       Amallar
                     </th>
                   </tr>
@@ -1882,8 +1769,7 @@ function GroupDetailModal({
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                       <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-                          `${s.user?.first_name || ''}`}
+                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 6 }}>
@@ -2004,7 +1890,7 @@ function EditStudentModal({
         hour: '2-digit',
         minute: '2-digit',
       })
-    : "Ma'lum emas";
+    : 'Ma\'lum emas';
 
   let transferLogs: any[] = [];
   try {
@@ -2035,7 +1921,7 @@ function EditStudentModal({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Talaba ma'lumotlarini saqlashda xatolik");
+      if (!res.ok) throw new Error(data.error || 'Talaba ma\'lumotlarini saqlashda xatolik');
       onSuccess();
     } catch (e: any) {
       setErr(e.message || 'Xatolik yuz berdi');
@@ -2118,7 +2004,9 @@ function EditStudentModal({
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="form-group">
-            <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+            <label className="form-label">
+              Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+            </label>
             <input
               className="input"
               value={fullName}
@@ -2218,7 +2106,7 @@ function TransferStudentModal({
       if (!res.ok) throw new Error(data.error || "Talabani ko'chirishda xatolik");
       onSuccess();
     } catch (e: any) {
-      setErr(e.message || 'Xatolik yuz berdi');
+      setErr(e.message || "Xatolik yuz berdi");
     } finally {
       setSaving(false);
     }
@@ -2242,9 +2130,7 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <ArrowRightLeft size={20} style={{ color: '#38bdf8' }} /> Talabani Ko'chirish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2261,16 +2147,7 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <p
-            style={{
-              fontSize: 13,
-              color: '#38bdf8',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
             <UserIcon size={16} /> <b>{fullName}</b>
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
@@ -2336,15 +2213,7 @@ function TransferStudentModal({
           </div>
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2356,13 +2225,7 @@ function TransferStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving || !selectedGroupId}
             >
               {saving ? (
@@ -2431,9 +2294,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             marginBottom: 20,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <BookOpen size={20} style={{ color: '#38bdf8' }} /> Yangi Guruh
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2472,15 +2333,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
           </div>
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2491,13 +2344,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving}
             >
               {saving ? (
@@ -2598,9 +2445,7 @@ function AddStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <UserPlus size={20} style={{ color: '#38bdf8' }} /> Talaba Qo'shish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2621,15 +2466,7 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('single')}
           >
             <UserIcon size={15} /> Bittalab
@@ -2637,15 +2474,7 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('bulk')}
           >
             <ListPlus size={15} /> Ro'yxat bo'yicha
@@ -2685,15 +2514,7 @@ function AddStudentModal({
           )}
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2705,13 +2526,7 @@ function AddStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving}
             >
               {saving ? (
@@ -2732,69 +2547,453 @@ function AddStudentModal({
 }
 
 // ============================================================
-// Stats View
+// Stats View (Redesigned with Collapsible Accordion Categories)
 // ============================================================
 function StatsView({ groups }: { groups: Group[] }) {
+  const [allStudents, setAllStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [openAcademic, setOpenAcademic] = useState(true);
+  const [openStatus, setOpenStatus] = useState(true);
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  async function fetchStudents() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/students');
+      const data = await res.json();
+      setAllStudents(data.students || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const academicGroups = groups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN');
   const statusGroups = groups.filter((g) => g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN');
 
+  const totalStudents = allStudents.length;
+
+  const getGroupStudentCount = (groupId: string) => {
+    return allStudents.filter((s) => s.group_id === groupId).length;
+  };
+
+  const academicStudentsCount = academicGroups.reduce(
+    (sum, g) => sum + getGroupStudentCount(g.id),
+    0,
+  );
+  const statusStudentsCount = statusGroups.reduce(
+    (sum, g) => sum + getGroupStudentCount(g.id),
+    0,
+  );
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="card">
-        <h3
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            marginBottom: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Top Header */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          background: 'rgba(255,255,255,0.03)',
+          padding: 16,
+          borderRadius: 16,
+          border: '1px solid var(--border)',
+        }}
+      >
+        <div>
+          <h2
+            style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <BarChart3 size={22} style={{ color: '#38bdf8' }} /> To'liq Tizim Statistikasi
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+            Mavzular (o'quv va maxsus guruhlar) bo'yicha talabalar soni va yig'ma statistikasi
+          </p>
+        </div>
+
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={fetchStudents}
+          disabled={loading}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38bdf8' }}
         >
-          <BarChart3 size={20} style={{ color: '#38bdf8' }} /> Tizim Statistikasi
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <span style={{ color: 'var(--text-secondary)' }}>Barcha guruhlar</span>
-            <span style={{ fontWeight: 700 }}>{groups.length} ta</span>
+          <RefreshCw size={15} className={loading ? 'spinner-icon' : ''} /> Yangilash
+        </button>
+      </div>
+
+      {/* Overview Stat Cards */}
+      <div className="grid-3">
+        <div className="stat-card" style={{ borderLeft: '4px solid #38bdf8' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-value" style={{ color: '#38bdf8' }}>
+                {totalStudents}
+              </span>
+              <span className="stat-label">Jami Talabalar Soni</span>
+            </div>
+            <Users size={24} style={{ color: '#38bdf8', opacity: 0.6 }} />
           </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <span style={{ color: 'var(--text-secondary)' }}>O'quv guruhlari</span>
-            <span style={{ fontWeight: 700, color: '#38bdf8' }}>{academicGroups.length} ta</span>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '4px solid #34d399' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-value" style={{ color: '#34d399' }}>
+                {academicStudentsCount}
+              </span>
+              <span className="stat-label">O'quv Guruhlarida</span>
+            </div>
+            <BookOpen size={24} style={{ color: '#34d399', opacity: 0.6 }} />
           </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <span style={{ color: 'var(--text-secondary)' }}>Biriktirilgan rahbarlar</span>
-            <span style={{ fontWeight: 700, color: '#344399' }}>
-              {academicGroups.filter((g) => g.leader_id).length} nafar
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Maxsus status guruhlari</span>
-            <span style={{ fontWeight: 700, color: '#fbbf24' }}>{statusGroups.length} ta</span>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '4px solid #fbbf24' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-value" style={{ color: '#fbbf24' }}>
+                {statusStudentsCount}
+              </span>
+              <span className="stat-label">Maxsus Statuslarda</span>
+            </div>
+            <GraduationCap size={24} style={{ color: '#fbbf24', opacity: 0.6 }} />
           </div>
         </div>
       </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40 }}>
+          <Loader2 className="spinner-icon" size={36} style={{ color: '#38bdf8', margin: '0 auto' }} />
+        </div>
+      ) : (
+        <>
+          {/* CATEGORY 1: O'quv Guruhlari (Accordion) */}
+          <div
+            className="card"
+            style={{
+              padding: 0,
+              overflow: 'hidden',
+              border: openAcademic ? '1px solid var(--accent-blue)' : '1px solid var(--border)',
+            }}
+          >
+            <div
+              onClick={() => setOpenAcademic(!openAcademic)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                cursor: 'pointer',
+                background: openAcademic ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#38bdf8',
+                  }}
+                >
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 16, fontWeight: 800 }}>
+                    📚 O'quv Guruhlari Statistikasi ({academicGroups.length} ta guruh)
+                  </h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Har bir o'quv guruhidagi talabalar soni va nisbiy ulushi
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: '#38bdf8',
+                    background: 'rgba(56, 189, 248, 0.12)',
+                    padding: '4px 12px',
+                    borderRadius: 20,
+                  }}
+                >
+                  {academicStudentsCount} nafar talaba
+                </span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {openAcademic ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </span>
+              </div>
+            </div>
+
+            {openAcademic && (
+              <div style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
+                {academicGroups.length === 0 ? (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
+                    O'quv guruhlari mavjud emas.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {academicGroups.map((g) => {
+                      const count = getGroupStudentCount(g.id);
+                      const percent =
+                        totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+                      const leaderName = g.leader
+                        ? `${g.leader.first_name} ${g.leader.last_name}`.trim()
+                        : 'Rahbar tayinlanmagan';
+
+                      return (
+                        <div
+                          key={g.id}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            padding: '14px 16px',
+                            borderRadius: 12,
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ fontWeight: 800, fontSize: 15, color: '#fff' }}>
+                                {g.name}
+                              </span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                                ({g.code})
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: g.leader_id ? '#34d399' : '#fbbf24',
+                                  background: g.leader_id
+                                    ? 'rgba(16,185,129,0.1)'
+                                    : 'rgba(245,158,11,0.1)',
+                                  padding: '2px 8px',
+                                  borderRadius: 6,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {leaderName}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <b style={{ fontSize: 15, color: '#38bdf8' }}>{count} nafar talaba</b>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 45, textAlign: 'right' }}>
+                                ({percent}%)
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Progress Bar */}
+                          <div
+                            style={{
+                              width: '100%',
+                              height: 8,
+                              background: 'rgba(255,255,255,0.06)',
+                              borderRadius: 4,
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${percent}%`,
+                                height: '100%',
+                                background: 'linear-gradient(90deg, #0284c7, #38bdf8)',
+                                borderRadius: 4,
+                                transition: 'width 0.4s ease',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* CATEGORY 2: Maxsus Status Guruhlari (Accordion) */}
+          <div
+            className="card"
+            style={{
+              padding: 0,
+              overflow: 'hidden',
+              border: openStatus ? '1px solid #fbbf24' : '1px solid var(--border)',
+            }}
+          >
+            <div
+              onClick={() => setOpenStatus(!openStatus)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                cursor: 'pointer',
+                background: openStatus ? 'rgba(245, 158, 11, 0.08)' : 'transparent',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fbbf24',
+                  }}
+                >
+                  <Bookmark size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 16, fontWeight: 800 }}>
+                    🎓 Maxsus Status Guruhlari (Akademik & Safdan Chiqqanlar)
+                  </h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    O'qishini to'xtatgan va vaqtincha akademik ta'til olgan talabalar soni
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: '#fbbf24',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    padding: '4px 12px',
+                    borderRadius: 20,
+                  }}
+                >
+                  {statusStudentsCount} nafar talaba
+                </span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {openStatus ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </span>
+              </div>
+            </div>
+
+            {openStatus && (
+              <div style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
+                {statusGroups.length === 0 ? (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
+                    Maxsus status guruhlari mavjud emas.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {statusGroups.map((g) => {
+                      const count = getGroupStudentCount(g.id);
+                      const percent =
+                        totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+                      const isAkademik = g.code === 'AKADEMIK';
+
+                      return (
+                        <div
+                          key={g.id}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            padding: '14px 16px',
+                            borderRadius: 12,
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              {isAkademik ? (
+                                <GraduationCap size={18} style={{ color: '#fbbf24' }} />
+                              ) : (
+                                <Ban size={18} style={{ color: '#ef4444' }} />
+                              )}
+                              <span style={{ fontWeight: 800, fontSize: 15, color: '#fff' }}>
+                                {g.name}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: isAkademik ? '#fbbf24' : '#ef4444',
+                                  background: isAkademik
+                                    ? 'rgba(245,158,11,0.1)'
+                                    : 'rgba(239,68,68,0.1)',
+                                  padding: '2px 8px',
+                                  borderRadius: 6,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                Maxsus Status
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <b style={{ fontSize: 15, color: isAkademik ? '#fbbf24' : '#ef4444' }}>
+                                {count} nafar talaba
+                              </b>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 45, textAlign: 'right' }}>
+                                ({percent}%)
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Progress Bar */}
+                          <div
+                            style={{
+                              width: '100%',
+                              height: 8,
+                              background: 'rgba(255,255,255,0.06)',
+                              borderRadius: 4,
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${percent}%`,
+                                height: '100%',
+                                background: isAkademik
+                                  ? 'linear-gradient(90deg, #d97706, #fbbf24)'
+                                  : 'linear-gradient(90deg, #b91c1c, #ef4444)',
+                                borderRadius: 4,
+                                transition: 'width 0.4s ease',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

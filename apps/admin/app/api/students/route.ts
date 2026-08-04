@@ -70,7 +70,9 @@ export async function POST(req: Request) {
         { user_id: user.id, group_id, student_card_number: student_card_number || '' },
         { onConflict: 'user_id,group_id' },
       )
-      .select('*, user:users(id, telegram_id, first_name, last_name, photo_url, created_at, updated_at)')
+      .select(
+        '*, user:users(id, telegram_id, first_name, last_name, photo_url, created_at, updated_at)',
+      )
       .single();
 
     if (studentErr) return NextResponse.json({ error: studentErr.message }, { status: 500 });
