@@ -65,17 +65,17 @@ function getRoleKeyboard(role: string) {
   if (role === 'SUPER_ADMIN') {
     return Markup.keyboard([
       [Markup.button.text("📚 Guruhlar ro'yxati"), Markup.button.text('👥 Barcha talabalar')],
-      [Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl)],
+      [Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl), Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
   if (role === 'GROUP_LEADER') {
     return Markup.keyboard([
       [Markup.button.text("👥 Talabalar ro'yxati"), Markup.button.text("＋ Talaba qo'shish")],
-      [Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl)],
+      [Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl), Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
   return Markup.keyboard([
-    [Markup.button.text('📚 Mening guruhim')],
+    [Markup.button.text('🔑 Kirish'), Markup.button.text('📚 Mening guruhim')],
     [Markup.button.webApp('📱 Web Panel', webAppUrl)],
   ]).resize();
 }
@@ -122,23 +122,20 @@ bot.start(async (ctx) => {
 
   // Check if admin
   if (String(tgUser.id) === '8135594558') {
-    await supabase
-      .from('users')
-      .update({ role: 'SUPER_ADMIN' })
-      .eq('telegram_id', String(tgUser.id));
-    await ctx.reply(`👑 *Xush kelibsiz, Admin!*\n\nKerakli bo'limni tanlang:`, {
-      parse_mode: 'Markdown',
-      ...getRoleKeyboard('SUPER_ADMIN'),
-    });
+    await supabase.from('users').update({ role: 'SUPER_ADMIN' }).eq('telegram_id', String(tgUser.id));
+    await ctx.reply(
+      `👑 *Xush kelibsiz, Admin!*\n\nKerakli bo'limni tanlang:`,
+      { parse_mode: 'Markdown', ...getRoleKeyboard('SUPER_ADMIN') },
+    );
     return;
   }
 
   // If GROUP_LEADER
   if (user?.role === 'GROUP_LEADER') {
-    await ctx.reply(`👨‍🏫 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
-      parse_mode: 'Markdown',
-      ...getRoleKeyboard('GROUP_LEADER'),
-    });
+    await ctx.reply(
+      `👨‍🏫 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`,
+      { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
+    );
     return;
   }
 
@@ -151,28 +148,67 @@ bot.start(async (ctx) => {
       .single();
 
     if (studentRecord) {
-      await ctx.reply(`🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
-        parse_mode: 'Markdown',
-        ...getRoleKeyboard('STUDENT'),
-      });
+      await ctx.reply(
+        `🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`,
+        { parse_mode: 'Markdown', ...getRoleKeyboard('STUDENT') },
+      );
       return;
     }
   }
 
-  // Unregistered — ask for login code
+  // Unregistered / Student without group — show Kirish keyboard and prompt
   await setState(String(tgUser.id), 'WAITING_LOGIN_CODE');
   await ctx.reply(
     `Assalomu alaykum, ${tgUser.first_name}! 👋\n\n` +
       `🔑 Tizimga kirish uchun *login kodingizni* yuboring.\n\n` +
       `📌 Login kodni guruh rahbari bo'lsangiz — admin beradi.\n` +
-      `📌 Talaba bo'lsangiz — guruh rahbaringizdan so'rang.`,
-    { parse_mode: 'Markdown' },
+      `📌 Qayta kirish uchun *🔑 Kirish* tugmasini bosing.`,
+    { parse_mode: 'Markdown', ...getRoleKeyboard('STUDENT') },
   );
 });
 
 // ============================================================
 // Button Handlers
 // ============================================================
+
+// 🔑 Kirish
+bot.hears('🔑 Kirish', async (ctx) => {
+  const telegramId = String(ctx.from.id);
+  await setState(telegramId, 'WAITING_LOGIN_CODE');
+  await ctx.reply(
+    `🔑 *Login kodingizni yuboring:*\n\n` +
+      `📌 Rahbar bo'lsangiz — admin tomonidan berilgan 6 xonali login kodni kiriting (masalan: \`AB3K7Z\`).`,
+    { parse_mode: 'Markdown' },
+  );
+});
+
+// 🚪 Chiqish
+bot.hears('🚪 Chiqish', async (ctx) => {
+  const telegramId = String(ctx.from.id);
+  const user = await getUser(telegramId);
+
+  if (user) {
+    // Unassign leader from group if leader
+    if (user.role === 'GROUP_LEADER') {
+      await supabase.from('groups').update({ leader_id: null }).eq('leader_id', user.id);
+    }
+    // Reset user role to STUDENT
+    await supabase.from('users').update({ role: 'STUDENT' }).eq('telegram_id', telegramId);
+  }
+
+  await setState(telegramId, null);
+
+  await ctx.reply(
+    `🚪 *Hisobdan chiqdingiz.*\n\nQayta kirish uchun *🔑 Kirish* tugmasini bosing yoki yangi login kodingizni yuboring.`,
+    {
+      parse_mode: 'Markdown',
+      ...Markup.keyboard([
+        [Markup.button.text('🔑 Kirish')],
+        [Markup.button.webApp('📱 Web Panel', webAppUrl)],
+      ]).resize(),
+    },
+  );
+});
 
 // 👥 Talabalar ro'yxati (Group Leader)
 bot.hears("👥 Talabalar ro'yxati", async (ctx) => {
@@ -184,14 +220,10 @@ bot.hears("👥 Talabalar ro'yxati", async (ctx) => {
     return;
   }
 
-  const { data: group } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('leader_id', user.id)
-    .single();
+  const { data: group } = await supabase.from('groups').select('*').eq('leader_id', user.id).single();
 
   if (!group) {
-    await ctx.reply('⚠️ Sizga hali guruh biriktirilmagan.');
+    await ctx.reply("⚠️ Sizga hali guruh biriktirilmagan.");
     return;
   }
 
@@ -211,9 +243,8 @@ bot.hears("＋ Talaba qo'shish", async (ctx) => {
   await setState(telegramId, 'WAITING_ADD_STUDENT');
   await ctx.reply(
     `➕ *Yangi talaba qo'shish*\n\n` +
-      `Talabaning Telegram ID'sini va Ismini yuboring.\n\n` +
-      `📌 *Format:* \`TelegramID Ism Familiya\`\n` +
-      `📌 *Misol:* \`987654321 Jasur Toshmatov\`\n\n` +
+      `Talabaning Familiya, Ism va Sharifini (F.I.Sh) yuboring.\n\n` +
+      `📌 *Misol:* \`Toshmatov Jasur Alisherovich\`\n\n` +
       `Bekor qilish uchun /cancel deb yozing.`,
     { parse_mode: 'Markdown' },
   );
@@ -230,15 +261,13 @@ bot.hears("📚 Guruhlar ro'yxati", async (ctx) => {
     .order('created_at', { ascending: false });
 
   if (!groups || groups.length === 0) {
-    await ctx.reply('📂 Guruhlar topilmadi.');
+    await ctx.reply("📂 Guruhlar topilmadi.");
     return;
   }
 
   let text = `📚 *Barcha Guruhlar Ro'yxati:* (${groups.length} ta)\n\n`;
   groups.forEach((g, idx) => {
-    const leaderName = g.leader
-      ? `${g.leader.first_name} ${g.leader.last_name}`.trim()
-      : ' Kutilmoqda...';
+    const leaderName = g.leader ? `${g.leader.first_name} ${g.leader.last_name}`.trim() : ' Kutilmoqda...';
     const studentCount = g.students?.[0]?.count || 0;
     text += `${idx + 1}. *${g.name}* (${g.code})\n`;
     text += `   👨‍🏫 Rahbar: ${leaderName}\n`;
@@ -250,7 +279,7 @@ bot.hears("📚 Guruhlar ro'yxati", async (ctx) => {
 });
 
 // 👥 Barcha talabalar (Admin)
-bot.hears('👥 Barcha talabalar', async (ctx) => {
+bot.hears("👥 Barcha talabalar", async (ctx) => {
   const telegramId = String(ctx.from.id);
   if (telegramId !== '8135594558') return;
 
@@ -281,7 +310,7 @@ bot.hears('👥 Barcha talabalar', async (ctx) => {
 });
 
 // 📚 Mening guruhim (Student)
-bot.hears('📚 Mening guruhim', async (ctx) => {
+bot.hears("📚 Mening guruhim", async (ctx) => {
   const telegramId = String(ctx.from.id);
   const user = await getUser(telegramId);
 
@@ -294,7 +323,7 @@ bot.hears('📚 Mening guruhim', async (ctx) => {
     .single();
 
   if (!studentRecord || !studentRecord.group) {
-    await ctx.reply('⚠️ Siz hali biror guruhga biriktirilmagansiz.');
+    await ctx.reply("⚠️ Siz hali biror guruhga biriktirilmagansiz.");
     return;
   }
 
@@ -305,7 +334,7 @@ bot.hears('📚 Mening guruhim', async (ctx) => {
 bot.command('cancel', async (ctx) => {
   await setState(String(ctx.from.id), null);
   const user = await getUser(String(ctx.from.id));
-  await ctx.reply('❌ Amaliyot bekor qilindi.', getRoleKeyboard(user?.role || 'STUDENT'));
+  await ctx.reply("❌ Amaliyot bekor qilindi.", getRoleKeyboard(user?.role || 'STUDENT'));
 });
 
 // ============================================================
@@ -376,7 +405,7 @@ bot.on('text', async (ctx) => {
     return;
   }
 
-  // 2. Process Add Student via Bot Text
+  // 2. Process Add Student via Bot Text (F.I.Sh)
   if (state === 'WAITING_ADD_STUDENT') {
     const user = await getUser(telegramId);
     let groupId: string | null = null;
@@ -396,40 +425,22 @@ bot.on('text', async (ctx) => {
       return;
     }
 
-    // Format: TelegramID Firstname Lastname
     const parts = text.split(' ').filter(Boolean);
-    if (parts.length < 2) {
-      await ctx.reply(
-        `⚠️ *Xato format!*\n\nFormat: \`TelegramID Ism Familiya\`\nMisol: \`987654321 Jasur Toshmatov\``,
-        { parse_mode: 'Markdown' },
-      );
-      return;
-    }
+    const lastName = parts[0] || text;
+    const firstName = parts.slice(1).join(' ') || '';
 
-    const studentTgId = parts[0];
-    const firstName = parts[1];
-    const lastName = parts.slice(2).join(' ') || '';
+    const autoTgId = `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
-    // Create user
-    let { data: studentUser } = await supabase
+    const { data: studentUser } = await supabase
       .from('users')
+      .insert({
+        telegram_id: autoTgId,
+        first_name: firstName || lastName,
+        last_name: firstName ? lastName : '',
+        role: 'STUDENT',
+      })
       .select('*')
-      .eq('telegram_id', studentTgId)
       .single();
-
-    if (!studentUser) {
-      const { data: newUser } = await supabase
-        .from('users')
-        .insert({
-          telegram_id: studentTgId,
-          first_name: firstName,
-          last_name: lastName,
-          role: 'STUDENT',
-        })
-        .select('*')
-        .single();
-      studentUser = newUser;
-    }
 
     if (studentUser) {
       await supabase
@@ -437,8 +448,9 @@ bot.on('text', async (ctx) => {
         .upsert({ user_id: studentUser.id, group_id: groupId }, { onConflict: 'user_id,group_id' });
 
       await setState(telegramId, null);
+      const fullName = `${lastName} ${firstName}`.trim();
       await ctx.reply(
-        `✅ *Talaba qo'shildi!*\n\n👤 *${firstName} ${lastName}* (ID: \`${studentTgId}\`) guruhga muvaffaqiyatli qo'shildi.`,
+        `✅ *Talaba qo'shildi!*\n\n👤 *${fullName}* guruhga muvaffaqiyatli qo'shildi.`,
         { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
       );
       return;
@@ -448,10 +460,10 @@ bot.on('text', async (ctx) => {
   // Default menu reply
   const user = await getUser(telegramId);
   if (user) {
-    await ctx.reply("Kerakli bo'limni tanlang:", getRoleKeyboard(user.role));
+    await ctx.reply('Kerakli bo\'limni tanlang:', getRoleKeyboard(user.role));
   } else {
     await setState(telegramId, 'WAITING_LOGIN_CODE');
-    await ctx.reply('🔑 Login kodingizni yuboring:');
+    await ctx.reply('🔑 Login kodingizni yuboring:', getRoleKeyboard('STUDENT'));
   }
 });
 
@@ -470,8 +482,5 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  return NextResponse.json({
-    status: 'Telegram Bot Webhook Active ✅',
-    version: '3.0-bot-native-features',
-  });
+  return NextResponse.json({ status: 'Telegram Bot Webhook Active ✅', version: '4.0-bot-login-logout' });
 }

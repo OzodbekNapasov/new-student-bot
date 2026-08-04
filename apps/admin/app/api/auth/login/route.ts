@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         .single();
 
       if (!group) {
-        return NextResponse.json({ error: 'Kiritilgan login kod noto\'g\'ri' }, { status: 404 });
+        return NextResponse.json({ error: "Kiritilgan login kod noto'g'ri" }, { status: 404 });
       }
 
       // If group already has a leader

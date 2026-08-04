@@ -505,8 +505,8 @@ function AddStudentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.telegram_id || !form.first_name) {
-      setErr('Telegram ID va ism majburiy');
+    if (!form.first_name && !form.last_name) {
+      setErr('Talabaning Ismi yoki Familiyasi kiritilishi shart');
       return;
     }
     setSaving(true);
@@ -545,35 +545,26 @@ function AddStudentModal({
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="form-group">
-            <label className="form-label">Telegram ID *</label>
-            <input
-              className="input"
-              type="number"
-              placeholder="Masalan: 987654321"
-              value={form.telegram_id}
-              onChange={(e) => setForm({ ...form, telegram_id: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Ism *</label>
-            <input
-              className="input"
-              placeholder="Masalan: Jasur"
-              value={form.first_name}
-              onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Familiya</label>
+            <label className="form-label">Familiyasi *</label>
             <input
               className="input"
               placeholder="Masalan: Toshmatov"
               value={form.last_name}
               onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+              autoFocus
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Talaba guvohnomasi raqami</label>
+            <label className="form-label">Ismi va Sharifi *</label>
+            <input
+              className="input"
+              placeholder="Masalan: Jasur Alisherovich"
+              value={form.first_name}
+              onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Talaba guvohnomasi raqami (ixtiyoriy)</label>
             <input
               className="input"
               placeholder="Masalan: TG-2023-001"

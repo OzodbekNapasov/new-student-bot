@@ -147,12 +147,16 @@ export default function Home() {
             Tizimga Kirish
           </h2>
           <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.6, marginBottom: 24 }}>
-            Guruh rahbari bo'lsangiz — admindan olgan <b>Login kodingizni</b> (masalan: <code>AB3K7Z</code>) kiriting.
+            Guruh rahbari bo'lsangiz — admindan olgan <b>Login kodingizni</b> (masalan:{' '}
+            <code>AB3K7Z</code>) kiriting.
             <br />
             Admin bo'lsangiz — <b>Telegram IDingizni</b> kiriting.
           </p>
 
-          <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form
+            onSubmit={handleManualSubmit}
+            style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+          >
             <input
               type="text"
               value={loginInput}
@@ -175,9 +179,7 @@ export default function Home() {
             />
 
             {loginError && (
-              <p style={{ color: '#ef4444', fontSize: 13, margin: 0 }}>
-                ⚠️ {loginError}
-              </p>
+              <p style={{ color: '#ef4444', fontSize: 13, margin: 0 }}>⚠️ {loginError}</p>
             )}
 
             <button
@@ -200,7 +202,9 @@ export default function Home() {
             </button>
           </form>
 
-          <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div
+            style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}
+          >
             <a
               href="https://t.me/new_students_shtt_bot"
               style={{ color: '#38bdf8', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}

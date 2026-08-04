@@ -27,28 +27,30 @@ export async function GET(req: Request) {
   return NextResponse.json({ students: sorted });
 }
 
-// POST /api/students — add student to group
+// POST /api/students — add student to group (telegram_id optional!)
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { telegram_id, group_id, first_name, last_name, username, student_card_number } = body;
 
-    if (!telegram_id || !group_id) {
-      return NextResponse.json({ error: 'telegram_id and group_id are required' }, { status: 400 });
+    if (!group_id || (!first_name && !last_name)) {
+      return NextResponse.json({ error: 'Talaba ismi va group_id kiritilishi shart' }, { status: 400 });
     }
+
+    const tgId = telegram_id ? String(telegram_id) : `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     // Find or create user
     let { data: user } = await supabase
       .from('users')
       .select('*')
-      .eq('telegram_id', String(telegram_id))
+      .eq('telegram_id', tgId)
       .single();
 
     if (!user) {
       const { data: newUser, error: createErr } = await supabase
         .from('users')
         .insert({
-          telegram_id: String(telegram_id),
+          telegram_id: tgId,
           first_name: first_name || 'Talaba',
           last_name: last_name || '',
           username: username || '',
