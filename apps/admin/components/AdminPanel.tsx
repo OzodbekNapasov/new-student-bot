@@ -1,78 +1,44 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { User, Group, Student } from '@/lib/types';
 
 // ============================================================
-// Helper: Export to Excel with gridlines
+// Helper: Export to native Excel (.xlsx) format using SheetJS
 // ============================================================
 function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yxati') {
-  let tableHtml = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-    <head>
-      <meta charset="utf-8">
-      <!--[if gte mso 9]>
-      <xml>
-        <x:ExcelWorkbook>
-          <x:ExcelWorksheets>
-            <x:ExcelWorksheet>
-              <x:Name>Talabalar</x:Name>
-              <x:WorksheetOptions>
-                <x:DisplayGridlines/>
-              </x:WorksheetOptions>
-            </x:ExcelWorksheet>
-          </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-      </xml>
-      <![endif]-->
-      <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #000000; padding: 6px 12px; font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
-        th { background-color: #2563eb; color: #ffffff; font-weight: bold; text-align: center; }
-        .text-center { text-align: center; }
-      </style>
-    </head>
-    <body>
-      <table>
-        <thead>
-          <tr>
-            <th>T/R</th>
-            <th>Guruhi</th>
-            <th>Talabaning ismi va familiyasi</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  students.forEach((s, i) => {
-    const fullName =
+  const data = students.map((s, i) => ({
+    'T/R': i + 1,
+    Guruhi: s.group?.name || s.group_name || 'Guruhsiz',
+    'Talabaning Familiyasi, Ismi va Sharifi':
       `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-      `${s.user?.first_name || ''}`;
-    const groupName = s.group?.name || s.group_name || 'Guruhsiz';
-    tableHtml += `
-      <tr>
-        <td class="text-center">${i + 1}</td>
-        <td class="text-center">${groupName}</td>
-        <td>${fullName}</td>
-      </tr>
-    `;
-  });
+      `${s.user?.first_name || ''}`,
+    "Qo'shilgan sana va vaqt": s.created_at
+      ? new Date(s.created_at).toLocaleString('uz-UZ', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '—',
+  }));
 
-  tableHtml += `
-        </tbody>
-      </table>
-    </body>
-    </html>
-  `;
+  const worksheet = XLSX.utils.json_to_sheet(data);
 
-  const blob = new Blob(['\ufeff' + tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${title}.xls`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Set column widths
+  worksheet['!cols'] = [
+    { wch: 8 }, // T/R
+    { wch: 20 }, // Guruhi
+    { wch: 45 }, // Talabaning Familiyasi, Ismi va Sharifi
+    { wch: 24 }, // Qo'shilgan sana va vaqt
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Talabalar');
+
+  XLSX.writeFile(workbook, `${title}.xlsx`);
 }
 
 export default function AdminPanel({ user }: { user: User }) {
@@ -81,7 +47,7 @@ export default function AdminPanel({ user }: { user: User }) {
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [showGroupDetail, setShowGroupDetail] = useState<Group | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [tab, setTab] = useState<'groups' | 'accordion' | 'stats'>('groups');
+  const [tab, setTab] = useState<'groups' | 'accordion' | 'history' | 'stats'>('groups');
 
   useEffect(() => {
     fetchGroups();
@@ -201,6 +167,12 @@ export default function AdminPanel({ user }: { user: User }) {
             👥 Yig'ma Ro'yxat
           </button>
           <button
+            className={`tab ${tab === 'history' ? 'active' : ''}`}
+            onClick={() => setTab('history')}
+          >
+            📜 Tarix va Log
+          </button>
+          <button
             className={`tab ${tab === 'stats' ? 'active' : ''}`}
             onClick={() => setTab('stats')}
           >
@@ -256,6 +228,12 @@ export default function AdminPanel({ user }: { user: User }) {
           </div>
         )}
 
+        {tab === 'history' && (
+          <div className="animate-in">
+            <HistoryView groups={groups} />
+          </div>
+        )}
+
         {tab === 'stats' && (
           <div className="animate-in">
             <StatsView groups={groups} />
@@ -287,6 +265,260 @@ export default function AdminPanel({ user }: { user: User }) {
           }}
         />
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// History & Activity Log View Component
+// ============================================================
+function HistoryView({ groups }: { groups: Group[] }) {
+  const [allStudents, setAllStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    fetchAllStudents();
+  }, []);
+
+  async function fetchAllStudents() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/students');
+      const data = await res.json();
+      setAllStudents(data.students || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Filter students created on selectedDate
+  const dayStudents = allStudents.filter((s) => {
+    if (!s.created_at) return false;
+    return s.created_at.startsWith(selectedDate);
+  });
+
+  // Calculate monthly stats
+  const monthlyStats: Record<string, { count: number; students: any[] }> = {};
+  allStudents.forEach((s) => {
+    if (s.created_at) {
+      const d = new Date(s.created_at);
+      const monthKey = d.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long' });
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = { count: 0, students: [] };
+      }
+      monthlyStats[monthKey].count += 1;
+      monthlyStats[monthKey].students.push(s);
+    }
+  });
+
+  const handleExportSelectedDate = () => {
+    const formatted = dayStudents.map((s) => ({
+      ...s,
+      group_name: s.group?.name || 'Guruhsiz',
+    }));
+    exportStudentsToExcel(formatted, `Tarix_${selectedDate}`);
+  };
+
+  const handleExportMonth = (monthName: string, monthData: any[]) => {
+    exportStudentsToExcel(monthData, `Talabalar_${monthName.replace(/\s+/g, '_')}`);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Date Filter & Daily Activity Log Header */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          background: 'rgba(255,255,255,0.03)',
+          padding: 16,
+          borderRadius: 16,
+          border: '1px solid var(--border)',
+        }}
+      >
+        <div>
+          <h2 style={{ fontSize: 17, fontWeight: 700 }}>📜 O'zgarishlar Tarixi va Log</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            Sana bo'yicha talabalar qo'shilishi va oylik statistika
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+            📅 Sanani tanlang:
+          </label>
+          <input
+            type="date"
+            className="input"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            style={{ padding: '6px 12px', fontSize: 13, backgroundColor: '#1e293b', color: '#fff' }}
+          />
+        </div>
+      </div>
+
+      {/* Daily Changes Card */}
+      <div className="card">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 14,
+            flexWrap: 'wrap',
+            gap: 10,
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>
+              🕒 {selectedDate} sanasidagi o'zgarishlar ({dayStudents.length} ta)
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              Ushbu kunda qo'shilgan talabalar va ularning guruhlari
+            </p>
+          </div>
+          {dayStudents.length > 0 && (
+            <button className="btn btn-success btn-sm" onClick={handleExportSelectedDate}>
+              📥 Excel (.xlsx) yuklab olish
+            </button>
+          )}
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 24 }}>
+            <div className="spinner" style={{ margin: '0 auto' }} />
+          </div>
+        ) : dayStudents.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '30px 16px',
+              color: 'var(--text-muted)',
+              fontSize: 13,
+            }}
+          >
+            📭 {selectedDate} sanasida hech qanday talaba qo'shilmagan.
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
+                  <th
+                    style={{
+                      padding: '10px 14px',
+                      width: 60,
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
+                    T/R
+                  </th>
+                  <th
+                    style={{
+                      padding: '10px 14px',
+                      width: 100,
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
+                    Soati
+                  </th>
+                  <th
+                    style={{
+                      padding: '10px 14px',
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
+                    Guruhi
+                  </th>
+                  <th
+                    style={{
+                      padding: '10px 14px',
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
+                    Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {dayStudents.map((s, idx) => {
+                  const fullName =
+                    `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                    `${s.user?.first_name || ''}`;
+                  const timeStr = s.created_at
+                    ? new Date(s.created_at).toLocaleTimeString('uz-UZ', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '—';
+                  return (
+                    <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
+                        🕒 {timeStr}
+                      </td>
+                      <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
+                        {s.group?.name || 'Guruhsiz'}
+                      </td>
+                      <td style={{ padding: '10px 14px', fontWeight: 600 }}>{fullName}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Monthly Statistics Card */}
+      <div className="card">
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>
+          📈 Oylar bo'yicha talabalar kelishi
+        </h3>
+        {Object.keys(monthlyStats).length === 0 ? (
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ma'lumot yo'q</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Object.entries(monthlyStats).map(([month, item]) => (
+              <div
+                key={month}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: 'rgba(255,255,255,0.03)',
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <div>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, textTransform: 'capitalize' }}>
+                    📅 {month}
+                  </h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Jami qo'shilgan talabalar:{' '}
+                    <b style={{ color: '#34d399' }}>{item.count} nafar</b>
+                  </p>
+                </div>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  style={{ color: '#34d399', fontWeight: 600, fontSize: 12 }}
+                  onClick={() => handleExportMonth(month, item.students)}
+                >
+                  📊 Excel (.xlsx) yuklash
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -378,7 +610,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
           style={{ boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
           onClick={handleExportAll}
         >
-          📥 Excelga yuklash (Barchasi)
+          📥 Excel (.xlsx) yuklash (Barchasi)
         </button>
       </div>
 
@@ -418,8 +650,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                 <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-                    {group.name}{' '}
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
+                    {group.name} <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     👨‍🏫 Rahbar: <b>{leaderName}</b>
@@ -445,9 +676,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 
             {/* Collapsible Content Body */}
             {isExpanded && (
-              <div
-                style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
-              >
+              <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -467,7 +696,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                       handleExportGroup(group);
                     }}
                   >
-                    📊 Excelga yuklash (Shu guruh)
+                    📊 Excel (.xlsx) yuklash (Shu guruh)
                   </button>
                 </div>
 
@@ -476,69 +705,28 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <div className="spinner" style={{ margin: '0 auto' }} />
                   </div>
                 ) : students.length === 0 ? (
-                  <p
-                    style={{
-                      textAlign: 'center',
-                      color: 'var(--text-muted)',
-                      fontSize: 13,
-                      padding: 20,
-                    }}
-                  >
+                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
                     Ushbu guruhda hali talabalar yo'q.
                   </p>
                 ) : (
-                  <div
-                    style={{
-                      overflowX: 'auto',
-                      borderRadius: 10,
-                      border: '1px solid var(--border)',
-                    }}
-                  >
+                  <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              width: 60,
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            T/R
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            Guruhi
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
+                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr
-                            key={s.id}
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                          >
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                              {idx + 1}
-                            </td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
-                              {group.name}
-                            </td>
+                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-                                `${s.user?.first_name || ''}`}
+                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                             </td>
                           </tr>
                         ))}
@@ -643,9 +831,7 @@ function GroupCard({
         </div>
         <button
           className="btn btn-ghost btn-sm"
-          style={{
-            color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)',
-          }}
+          style={{ color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)' }}
           onClick={() => onCopy(group.login_code)}
         >
           {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
@@ -889,13 +1075,7 @@ function GroupDetailModal({
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <code
-                style={{
-                  fontSize: 22,
-                  fontWeight: 900,
-                  letterSpacing: 4,
-                  color: '#fbbf24',
-                  flex: 1,
-                }}
+                style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: '#fbbf24', flex: 1 }}
               >
                 {group.login_code || '------'}
               </code>
@@ -959,25 +1139,13 @@ function GroupDetailModal({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        width: 50,
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
+                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>
                       T/R
                     </th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        textAlign: 'right',
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
+                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
                       Amallar
                     </th>
                   </tr>
@@ -1160,7 +1328,11 @@ function TransferStudentModal({
                   style={{ backgroundColor: '#0f172a', color: '#38bdf8', fontWeight: 'bold' }}
                 >
                   {academicGroups.map((g) => (
-                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                    <option
+                      key={g.id}
+                      value={g.id}
+                      style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                    >
                       {g.name} ({g.code})
                     </option>
                   ))}
@@ -1173,7 +1345,11 @@ function TransferStudentModal({
                   style={{ backgroundColor: '#0f172a', color: '#f43f5e', fontWeight: 'bold' }}
                 >
                   {statusGroups.map((g) => (
-                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                    <option
+                      key={g.id}
+                      value={g.id}
+                      style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                    >
                       {g.name}
                     </option>
                   ))}
@@ -1422,9 +1598,7 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">
-                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
-              </label>
+              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"

@@ -599,7 +599,11 @@ function TransferStudentModal({
                   style={{ backgroundColor: '#0f172a', color: '#38bdf8', fontWeight: 'bold' }}
                 >
                   {academicGroups.map((g) => (
-                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                    <option
+                      key={g.id}
+                      value={g.id}
+                      style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                    >
                       {g.name} ({g.code})
                     </option>
                   ))}
@@ -612,7 +616,11 @@ function TransferStudentModal({
                   style={{ backgroundColor: '#0f172a', color: '#f43f5e', fontWeight: 'bold' }}
                 >
                   {statusGroups.map((g) => (
-                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                    <option
+                      key={g.id}
+                      value={g.id}
+                      style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                    >
                       {g.name}
                     </option>
                   ))}
