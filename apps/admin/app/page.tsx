@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { User } from '@/lib/types';
-import { getTelegramUser, expandTelegramApp } from '@/lib/telegramAuth';
 import AdminPanel from '@/components/AdminPanel';
 import GroupLeaderPanel from '@/components/GroupLeaderPanel';
 import StudentPanel from '@/components/StudentPanel';
@@ -11,14 +10,29 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminInputId, setAdminInputId] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState('');
 
   useEffect(() => {
-    // Wait for Telegram WebApp script to load then login
+    // 1. Check local session first
+    const savedUser = localStorage.getItem('smp_user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed?.id && parsed?.role) {
+          setUser(parsed);
+          setLoading(false);
+          return;
+        }
+      } catch {}
+    }
+
+    // 2. Try Telegram WebApp login
     waitForTelegramAndLogin();
   }, []);
 
   async function waitForTelegramAndLogin() {
-    // Telegram WebApp script may not have loaded yet — retry up to 15 times (1.5s)
     let attempts = 0;
     const maxAttempts = 15;
 
@@ -27,19 +41,17 @@ export default function Home() {
       const tg = (window as any).Telegram?.WebApp;
 
       if (tg?.initDataUnsafe?.user) {
-        // Telegram WebApp is ready
         tg.expand();
         tg.ready();
         try {
           tg.setHeaderColor('#0f172a');
           tg.setBackgroundColor('#0f172a');
         } catch {}
-        await login(tg.initDataUnsafe.user);
+        await performLogin(tg.initDataUnsafe.user);
       } else if (attempts < maxAttempts) {
-        // Not ready yet — wait 100ms and try again
         setTimeout(tryLogin, 100);
       } else {
-        // Gave up — not inside Telegram
+        // Not in Telegram WebApp and no saved session
         setError('TELEGRAM_ONLY');
         setLoading(false);
       }
@@ -48,7 +60,7 @@ export default function Home() {
     tryLogin();
   }
 
-  async function login(tgUser: any) {
+  async function performLogin(tgUser: any) {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -65,6 +77,7 @@ export default function Home() {
       if (!res.ok) throw new Error('Login failed');
       const data = await res.json();
       setUser(data.user);
+      localStorage.setItem('smp_user', JSON.stringify(data.user));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -72,6 +85,37 @@ export default function Home() {
     }
   }
 
+  async function handleAdminManualLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setAdminAuthError('');
+    if (!adminInputId.trim()) return;
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telegram_id: adminInputId.trim(),
+          first_name: 'Admin',
+        }),
+      });
+
+      if (!res.ok) throw new Error('Login failed');
+      const data = await res.json();
+
+      if (data.user?.role !== 'SUPER_ADMIN') {
+        setAdminAuthError("Ruxsat berilmadi: Siz Super Admin emassiz");
+        return;
+      }
+
+      setUser(data.user);
+      localStorage.setItem('smp_user', JSON.stringify(data.user));
+      setShowAdminModal(false);
+      setError(null);
+    } catch (err: any) {
+      setAdminAuthError(err.message || 'Xatolik yuz berdi');
+    }
+  }
 
   if (loading) {
     return (
@@ -91,8 +135,8 @@ export default function Home() {
     );
   }
 
-  // Not opened in Telegram — block access
-  if (error === 'TELEGRAM_ONLY') {
+  // Not opened in Telegram & no stored session
+  if (error === 'TELEGRAM_ONLY' && !user) {
     return (
       <div
         style={{
@@ -104,6 +148,7 @@ export default function Home() {
           gap: 20,
           padding: 32,
           textAlign: 'center',
+          position: 'relative',
         }}
       >
         <span style={{ fontSize: 72 }}>🔒</span>
@@ -113,6 +158,7 @@ export default function Home() {
           <br />
           Botga /start yuboring va panelni oching.
         </p>
+
         <a
           href="https://t.me/new_students_shtt_bot"
           style={{
@@ -129,6 +175,117 @@ export default function Home() {
         >
           📱 Botga O'tish
         </a>
+
+        {/* Secret Admin Login trigger */}
+        <button
+          onClick={() => setShowAdminModal(true)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-secondary)',
+            fontSize: 12,
+            cursor: 'pointer',
+            marginTop: 32,
+            textDecoration: 'underline',
+          }}
+        >
+          🔑 Admin sifatida kirish
+        </button>
+
+        {showAdminModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 16,
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                background: '#1e293b',
+                borderRadius: 20,
+                padding: 24,
+                width: '100%',
+                maxWidth: 360,
+                textAlign: 'left',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
+              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12, color: '#fff' }}>
+                🔑 Admin Kirish
+              </h3>
+              <form onSubmit={handleAdminManualLogin}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}>
+                    Admin Telegram ID
+                  </label>
+                  <input
+                    type="text"
+                    value={adminInputId}
+                    onChange={(e) => setAdminInputId(e.target.value)}
+                    placeholder="Masalan: 8135594558"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: 10,
+                      background: '#0f172a',
+                      border: '1px solid #334155',
+                      color: '#fff',
+                      fontSize: 14,
+                      outline: 'none',
+                    }}
+                    autoFocus
+                  />
+                </div>
+
+                {adminAuthError && (
+                  <p style={{ color: '#ef4444', fontSize: 13, marginBottom: 12 }}>
+                    ⚠️ {adminAuthError}
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminModal(false)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 10,
+                      background: 'transparent',
+                      color: '#94a3b8',
+                      border: '1px solid #334155',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Bekor qilish
+                  </button>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '8px 20px',
+                      borderRadius: 10,
+                      background: 'linear-gradient(135deg, #0088cc, #00b4ff)',
+                      color: '#fff',
+                      border: 'none',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Kirish
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -151,40 +308,15 @@ export default function Home() {
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: 14 }}>
           {error || "Foydalanuvchi ma'lumoti topilmadi"}
         </p>
-        <button className="btn btn-primary" onClick={login}>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            localStorage.removeItem('smp_user');
+            window.location.reload();
+          }}
+        >
           Qayta urinish
         </button>
-      </div>
-    );
-  }
-
-  // Unknown user — not registered yet (new user who hasn't used the bot)
-  if (!user.role || user.role === 'STUDENT') {
-    // Check if STUDENT role is legitimate (they exist in students table)
-    // For now, show student panel — GroupLeaderPanel handles leader-specific UI
-    if (user.role === 'STUDENT') return <StudentPanel user={user} />;
-
-    // No role assigned yet
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: 16,
-          padding: 32,
-          textAlign: 'center',
-        }}
-      >
-        <span style={{ fontSize: 64 }}>⏳</span>
-        <h2 style={{ fontSize: 20, fontWeight: 700 }}>Hali ro'yxatdan o'tmadingiz</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
-          Botga login kodingizni yuboring.
-          <br />
-          Rahbar bo'lsangiz — admin tomonidan kod beriladi.
-        </p>
       </div>
     );
   }
