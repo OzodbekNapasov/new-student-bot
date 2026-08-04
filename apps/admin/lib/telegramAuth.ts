@@ -23,17 +23,57 @@ export function getTelegramWebApp() {
 }
 
 export function getTelegramUser(): TelegramUser | null {
+  if (typeof window === 'undefined') return null;
+
   const tg = getTelegramWebApp();
-  if (!tg?.initDataUnsafe?.user) return null;
-  return tg.initDataUnsafe.user as TelegramUser;
+
+  // 1. Direct initDataUnsafe.user
+  if (tg?.initDataUnsafe?.user) {
+    return tg.initDataUnsafe.user as TelegramUser;
+  }
+
+  // 2. Parse tg.initData string
+  if (tg?.initData) {
+    const user = parseTelegramInitData(tg.initData);
+    if (user) return user;
+  }
+
+  // 3. Fallback: Parse URL hash / search params for Telegram WebApp data
+  try {
+    const hash = window.location.hash;
+    const search = window.location.search;
+
+    const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+    const searchParams = new URLSearchParams(search);
+
+    const tgWebAppData = hashParams.get('tgWebAppData') || searchParams.get('tgWebAppData');
+    if (tgWebAppData) {
+      const user = parseTelegramInitData(tgWebAppData);
+      if (user) return user;
+    }
+
+    const userParam = hashParams.get('user') || searchParams.get('user');
+    if (userParam) {
+      return JSON.parse(userParam) as TelegramUser;
+    }
+
+    const tgIdParam = searchParams.get('tg_id') || hashParams.get('tg_id');
+    if (tgIdParam) {
+      return { id: Number(tgIdParam), first_name: 'User' } as TelegramUser;
+    }
+  } catch {}
+
+  return null;
 }
 
 export function expandTelegramApp() {
   const tg = getTelegramWebApp();
   if (tg) {
-    tg.expand();
-    tg.ready();
-    tg.setHeaderColor('#0f172a');
-    tg.setBackgroundColor('#0f172a');
+    try {
+      tg.expand();
+      tg.ready();
+      tg.setHeaderColor('#0f172a');
+      tg.setBackgroundColor('#0f172a');
+    } catch {}
   }
 }
