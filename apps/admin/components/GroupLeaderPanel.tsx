@@ -1,46 +1,29 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { User, Group, Student, Attendance, AttendanceStatus } from '@/lib/types';
+import { User, Group, Student } from '@/lib/types';
 
 interface Props {
   user: User;
 }
 
-const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
-  PRESENT: '#34d399',
-  ABSENT: '#f87171',
-  EXCUSED: '#fbbf24',
-  LATE: '#a78bfa',
-};
-
-const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
-  PRESENT: 'Keldi',
-  ABSENT: 'Kelmadi',
-  EXCUSED: 'Sababli',
-  LATE: 'Kech keldi',
-};
-
 export default function GroupLeaderPanel({ user }: Props) {
   const [myGroup, setMyGroup] = useState<Group | null>(null);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
-  const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
-  const [savedAttendance, setSavedAttendance] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'today' | 'students' | 'history'>('today');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
-
-  const today = new Date().toISOString().split('T')[0];
+  const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
 
   const fetchMyGroup = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/groups');
       const data = await res.json();
-      const allGroups: Group[] = data.groups || [];
-      const mine = allGroups.find(
+      const groupsList: Group[] = data.groups || [];
+      setAllGroups(groupsList);
+
+      const mine = groupsList.find(
         (g) =>
           g.leader_id === user.id ||
           g.leader?.id === user.id ||
@@ -49,64 +32,18 @@ export default function GroupLeaderPanel({ user }: Props) {
       setMyGroup(mine || null);
 
       if (mine) {
-        const [studRes, attRes] = await Promise.all([
-          fetch(`/api/students?group_id=${mine.id}`),
-          fetch(`/api/attendance?group_id=${mine.id}&date=${today}`),
-        ]);
+        const studRes = await fetch(`/api/students?group_id=${mine.id}`);
         const studData = await studRes.json();
-        const attData = await attRes.json();
         setStudents(studData.students || []);
-
-        const attMap: Record<string, AttendanceStatus> = {};
-        (attData.attendance || []).forEach((a: Attendance) => {
-          attMap[a.student_id] = a.status;
-        });
-        setAttendance(attMap);
-        setSavedAttendance(attData.attendance || []);
       }
     } finally {
       setLoading(false);
     }
-  }, [user.id, today]);
+  }, [user.id, user.telegram_id]);
 
   useEffect(() => {
     fetchMyGroup();
   }, [fetchMyGroup]);
-
-  const markAttendance = (studentId: string, status: AttendanceStatus) => {
-    setAttendance((prev) => ({ ...prev, [studentId]: status }));
-    setSaved(false);
-  };
-
-  const saveAttendance = async () => {
-    if (!myGroup) return;
-    setSaving(true);
-    try {
-      const records = students.map((s) => ({
-        student_id: s.id,
-        status: attendance[s.id] || 'PRESENT',
-        note: '',
-      }));
-
-      const res = await fetch('/api/attendance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ records, group_id: myGroup.id, date: today, marked_by_id: user.id }),
-      });
-      if (!res.ok) throw new Error('Saqlashda xato');
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const todayFormatted = new Date().toLocaleDateString('uz-UZ', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   if (loading) {
     return (
@@ -153,34 +90,17 @@ export default function GroupLeaderPanel({ user }: Props) {
     );
   }
 
-  const presentCount = students.filter(
-    (s) => attendance[s.id] === 'PRESENT' || !attendance[s.id],
-  ).length;
-  const absentCount = students.filter((s) => attendance[s.id] === 'ABSENT').length;
-  const excusedCount = students.filter((s) => attendance[s.id] === 'EXCUSED').length;
-
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 24 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 60, background: 'var(--bg-primary)' }}>
       {/* Header */}
       <div
         style={{
           background: 'linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #1d3557 100%)',
-          padding: '24px 20px 80px',
+          padding: '24px 20px 70px',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: -40,
-            right: -40,
-            width: 150,
-            height: 150,
-            borderRadius: '50%',
-            background: 'rgba(16,185,129,0.1)',
-          }}
-        />
         <div
           style={{
             display: 'flex',
@@ -211,8 +131,8 @@ export default function GroupLeaderPanel({ user }: Props) {
               <h1 style={{ fontSize: 20, fontWeight: 800 }}>
                 {user.first_name} {user.last_name}
               </h1>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-                📚 {myGroup.name} — {myGroup.code}
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
+                📚 Guruh: <b>{myGroup.name}</b> ({myGroup.code})
               </p>
             </div>
           </div>
@@ -240,233 +160,113 @@ export default function GroupLeaderPanel({ user }: Props) {
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ padding: '0 16px', marginTop: -40, position: 'relative', zIndex: 1 }}>
-        <div className="grid-3">
-          <div className="stat-card">
-            <span className="stat-value" style={{ color: '#34d399' }}>
-              {presentCount}
-            </span>
-            <span className="stat-label">Keldi</span>
+      {/* Group Stats Card */}
+      <div style={{ padding: '0 16px', marginTop: -35, position: 'relative', zIndex: 1 }}>
+        <div
+          className="card"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 20px',
+            background: 'rgba(30, 41, 59, 0.95)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>GURUH TALABALARI</p>
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: '#34d399', marginTop: 2 }}>
+              {students.length} nafar
+            </h2>
           </div>
-          <div className="stat-card">
-            <span className="stat-value" style={{ color: '#f87171' }}>
-              {absentCount}
-            </span>
-            <span className="stat-label">Kelmadi</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-value" style={{ color: 'var(--accent-blue-light)' }}>
-              {students.length}
-            </span>
-            <span className="stat-label">Jami</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <div className="tabs">
           <button
-            className={`tab ${tab === 'today' ? 'active' : ''}`}
-            onClick={() => setTab('today')}
+            className="btn btn-primary"
+            style={{ boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)' }}
+            onClick={() => setShowAddStudent(true)}
           >
-            📋 Bugun
-          </button>
-          <button
-            className={`tab ${tab === 'students' ? 'active' : ''}`}
-            onClick={() => setTab('students')}
-          >
-            👥 Talabalar
-          </button>
-          <button
-            className={`tab ${tab === 'history' ? 'active' : ''}`}
-            onClick={() => setTab('history')}
-          >
-            📅 Tarix
+            ＋ Talaba Qo'shish
           </button>
         </div>
       </div>
 
-      <div style={{ padding: '16px 16px 100px' }}>
-        {/* Today Tab */}
-        {tab === 'today' && (
-          <div className="animate-in">
-            <div
-              className="card"
-              style={{
-                marginBottom: 16,
-                background: 'rgba(16,185,129,0.08)',
-                borderColor: 'rgba(16,185,129,0.2)',
-              }}
-            >
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
-                📅 Bugungi sana
-              </p>
-              <p style={{ fontSize: 15, fontWeight: 600 }}>{todayFormatted}</p>
-            </div>
+      {/* Main Students List Section */}
+      <div style={{ padding: '20px 16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 14,
+          }}
+        >
+          <h3 style={{ fontSize: 17, fontWeight: 700 }}>
+            👥 Guruh Talabalari Ro'yxati <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>(Familiya Ism Sharif)</span>
+          </h3>
+          <button className="btn btn-ghost btn-sm" onClick={fetchMyGroup}>
+            🔄 Yangilash
+          </button>
+        </div>
 
-            {students.length === 0 ? (
-              <div
-                style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>👥</div>
-                <p style={{ fontWeight: 600, marginBottom: 8 }}>Talabalar yo'q</p>
-                <button className="btn btn-primary btn-sm" onClick={() => setTab('students')}>
-                  Talaba qo'shish
-                </button>
-              </div>
-            ) : (
-              <>
-                {students.map((student) => {
-                  const currentStatus = attendance[student.id] || 'PRESENT';
+        {students.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: 'var(--text-muted)',
+              background: 'rgba(255,255,255,0.02)',
+              borderRadius: 16,
+              border: '1px dashed var(--border)',
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 12 }}>👤</div>
+            <p style={{ fontWeight: 600, marginBottom: 6 }}>Guruhda talabalar yo'q</p>
+            <p style={{ fontSize: 13 }}>Yuqoridagi "＋ Talaba Qo'shish" tugmasi orqali talaba qo'shing.</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid var(--border)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                  <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                  <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                    Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
+                  </th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
+                    Amallar
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((s, i) => {
+                  const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
+
                   return (
-                    <div key={student.id} className="card" style={{ marginBottom: 10 }}>
-                      <div
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}
-                      >
-                        <div
-                          className="avatar avatar-sm"
+                    <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 600 }}>
+                        {fullName}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
                           style={{
-                            background:
-                              'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                            color: '#38bdf8',
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            border: '1px solid rgba(56, 189, 248, 0.2)',
+                            fontWeight: 600,
+                            padding: '6px 12px',
+                            borderRadius: 8,
                           }}
+                          onClick={() => setTransferringStudent(s)}
                         >
-                          {student.user?.first_name?.charAt(0) || '?'}
-                        </div>
-                        <div>
-                          <p style={{ fontWeight: 600, fontSize: 14 }}>
-                            {student.user?.first_name} {student.user?.last_name}
-                          </p>
-                          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                            @{student.user?.username || '—'}
-                          </p>
-                        </div>
-                        <span
-                          className="badge"
-                          style={{
-                            marginLeft: 'auto',
-                            background: `${ATTENDANCE_COLORS[currentStatus]}20`,
-                            color: ATTENDANCE_COLORS[currentStatus],
-                          }}
-                        >
-                          {ATTENDANCE_LABELS[currentStatus]}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {(Object.keys(ATTENDANCE_LABELS) as AttendanceStatus[]).map((status) => (
-                          <button
-                            key={status}
-                            className="btn btn-sm"
-                            style={{
-                              flex: 1,
-                              padding: '6px 4px',
-                              fontSize: 11,
-                              background:
-                                currentStatus === status
-                                  ? `${ATTENDANCE_COLORS[status]}30`
-                                  : 'rgba(255,255,255,0.04)',
-                              color:
-                                currentStatus === status
-                                  ? ATTENDANCE_COLORS[status]
-                                  : 'var(--text-muted)',
-                              border: `1px solid ${currentStatus === status ? ATTENDANCE_COLORS[status] + '60' : 'var(--border)'}`,
-                            }}
-                            onClick={() => markAttendance(student.id, status)}
-                          >
-                            {ATTENDANCE_LABELS[status]}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                          ⇄ Boshqa guruhga ko'chirish
+                        </button>
+                      </td>
+                    </tr>
                   );
                 })}
-
-                <div style={{ position: 'fixed', bottom: 24, left: 16, right: 16, zIndex: 10 }}>
-                  <button
-                    className="btn btn-success btn-lg"
-                    style={{ width: '100%', boxShadow: '0 8px 32px rgba(16,185,129,0.4)' }}
-                    onClick={saveAttendance}
-                    disabled={saving}
-                  >
-                    {saving ? '⏳ Saqlanmoqda...' : saved ? '✅ Saqlandi!' : '💾 Davomatni Saqlash'}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Students Tab */}
-        {tab === 'students' && (
-          <div className="animate-in">
-            <button
-              className="btn btn-primary"
-              style={{ width: '100%', marginBottom: 16 }}
-              onClick={() => setShowAddStudent(true)}
-            >
-              ＋ Talaba qo'shish
-            </button>
-            {students.length === 0 ? (
-              <div
-                style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>👤</div>
-                <p style={{ fontWeight: 600 }}>Talabalar yo'q</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {students.map((s, i) => (
-                  <div
-                    key={s.id}
-                    className="card"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-                  >
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 24 }}>
-                      {i + 1}.
-                    </span>
-                    <div className="avatar avatar-sm">{s.user?.first_name?.charAt(0) || '?'}</div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 600, fontSize: 14 }}>
-                        {s.user?.first_name} {s.user?.last_name}
-                      </p>
-                      {s.student_card_number && (
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          Guvohnoma: {s.student_card_number}
-                        </p>
-                      )}
-                    </div>
-                    <span className={`badge ${s.is_active ? 'badge-green' : 'badge-red'}`}>
-                      {s.is_active ? 'Faol' : 'Nofaol'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* History Tab */}
-        {tab === 'history' && (
-          <div className="animate-in">
-            <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
-              <p style={{ fontWeight: 600, marginBottom: 8 }}>Bugungi Davomat</p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16 }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 32, fontWeight: 800, color: '#34d399' }}>{presentCount}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Keldi</p>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 32, fontWeight: 800, color: '#f87171' }}>{absentCount}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Kelmadi</p>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 32, fontWeight: 800, color: '#fbbf24' }}>{excusedCount}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Sababli</p>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -482,10 +282,27 @@ export default function GroupLeaderPanel({ user }: Props) {
           }}
         />
       )}
+
+      {/* Transfer Student Modal */}
+      {transferringStudent && (
+        <TransferStudentModal
+          student={transferringStudent}
+          allGroups={allGroups}
+          currentGroupId={myGroup.id}
+          onClose={() => setTransferringStudent(null)}
+          onSuccess={() => {
+            setTransferringStudent(null);
+            fetchMyGroup();
+          }}
+        />
+      )}
     </div>
   );
 }
 
+// ============================================================
+// Add Student Modal (Single F.I.Sh + Bulk List Mode)
+// ============================================================
 function AddStudentModal({
   groupId,
   onClose,
@@ -602,9 +419,7 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">
-                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
-              </label>
+              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"
@@ -639,6 +454,143 @@ function AddStudentModal({
             </button>
             <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={saving}>
               {saving ? '⏳ Saqlanmoqda...' : "✓ Qo'shish"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Transfer Student Modal
+// ============================================================
+function TransferStudentModal({
+  student,
+  allGroups,
+  currentGroupId,
+  onClose,
+  onSuccess,
+}: {
+  student: Student;
+  allGroups: Group[];
+  currentGroupId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const fullName = `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() || `${student.user?.first_name || ''}`;
+
+  const handleTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGroupId) {
+      setErr('Iltimos, guruhni tanlang');
+      return;
+    }
+    setSaving(true);
+    setErr('');
+    try {
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_id: selectedGroupId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      onSuccess();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const academicGroups = allGroups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId);
+  const statusGroups = allGroups.filter((g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId);
+
+  return (
+    <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 480 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}
+        >
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>⇄ Talabani Ko'chirish</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <div
+          style={{
+            background: 'rgba(56, 189, 248, 0.08)',
+            border: '1px solid rgba(56, 189, 248, 0.2)',
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 16,
+          }}
+        >
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
+            👤 <b>{fullName}</b>
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            Talaba tizimdan o'chib ketmaydi, faqatgina tanlangan yangi guruhga ko'chiriladi.
+          </p>
+        </div>
+
+        <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="form-group">
+            <label className="form-label">Qaysi guruhga o'tkazilsin? *</label>
+            <select
+              className="input"
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+              style={{ fontSize: 14, fontWeight: 600 }}
+              autoFocus
+            >
+              <option value="">-- Guruhni tanlang --</option>
+              {academicGroups.length > 0 && (
+                <optgroup label="📚 O'quv Guruhlari">
+                  {academicGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} ({g.code})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+
+              {statusGroups.length > 0 && (
+                <optgroup label="──────── Maxsus Holatlar ────────">
+                  {statusGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+
+          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
+              Bekor
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 2 }}
+              disabled={saving || !selectedGroupId}
+            >
+              {saving ? "⏳ O'tkazilmoqda..." : "✓ O'tkazish"}
             </button>
           </div>
         </form>

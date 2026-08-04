@@ -92,18 +92,17 @@ async function sendGroupStudentsList(ctx: any, groupId: string, groupName: strin
     return;
   }
 
-  // Sort alphabetically by first_name & last_name
+  // Sort alphabetically by Familiya Ism Sharif (last_name first_name)
   const sorted = students.sort((a, b) => {
-    const nameA = `${a.user?.first_name || ''} ${a.user?.last_name || ''}`.trim();
-    const nameB = `${b.user?.first_name || ''} ${b.user?.last_name || ''}`.trim();
+    const nameA = `${a.user?.last_name || ''} ${a.user?.first_name || ''}`.trim();
+    const nameB = `${b.user?.last_name || ''} ${b.user?.first_name || ''}`.trim();
     return nameA.localeCompare(nameB, 'uz');
   });
 
-  let message = `📚 *${groupName}* guruhi talabalari (Alifbo tartibida):\n\n`;
+  let message = `📚 *${groupName}* guruhi talabalari (Familiya Ism Sharif bo'yicha alifbo tartibida):\n\n`;
   sorted.forEach((s, idx) => {
-    const fullName = `${s.user?.first_name || ''} ${s.user?.last_name || ''}`.trim();
-    const username = s.user?.username ? `@${s.user.username}` : `ID: \`${s.user?.telegram_id}\``;
-    message += `${idx + 1}. 👤 *${fullName}* — ${username}\n`;
+    const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
+    message += `${idx + 1}. 👤 *${fullName}*\n`;
   });
 
   message += `\n👥 *Jami:* ${sorted.length} nafar talaba`;
@@ -315,16 +314,16 @@ bot.hears('👥 Barcha talabalar', async (ctx) => {
     return;
   }
 
-  // Sort alphabetically
+  // Sort alphabetically by Familiya Ism Sharif (last_name first_name)
   const sorted = students.sort((a, b) => {
-    const nameA = `${a.user?.first_name || ''} ${a.user?.last_name || ''}`.trim();
-    const nameB = `${b.user?.first_name || ''} ${b.user?.last_name || ''}`.trim();
+    const nameA = `${a.user?.last_name || ''} ${a.user?.first_name || ''}`.trim();
+    const nameB = `${b.user?.last_name || ''} ${b.user?.first_name || ''}`.trim();
     return nameA.localeCompare(nameB, 'uz');
   });
 
-  let text = `👥 *Barcha Talabalar Ro'yxati (Alifbo tartibida):*\n\n`;
+  let text = `👥 *Barcha Talabalar Ro'yxati (Familiya Ism Sharif bo'yicha alifbo tartibida):*\n\n`;
   sorted.forEach((s, idx) => {
-    const name = `${s.user?.first_name || ''} ${s.user?.last_name || ''}`.trim();
+    const name = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
     text += `${idx + 1}. 👤 *${name}* — ${s.group?.name || 'Guruhsiz'}\n`;
   });
 

@@ -15,7 +15,11 @@ function generateLoginCode(): string {
 export async function GET() {
   try {
     // Ensure "Akademik ta'til olganlar" group exists
-    const { data: akademikGroup } = await supabase.from('groups').select('id').eq('code', 'AKADEMIK').single();
+    const { data: akademikGroup } = await supabase
+      .from('groups')
+      .select('id')
+      .eq('code', 'AKADEMIK')
+      .single();
     if (!akademikGroup) {
       await supabase.from('groups').insert({
         name: "🎓 Akademik ta'til olganlar",
@@ -27,7 +31,11 @@ export async function GET() {
     }
 
     // Ensure "Talabalar safidan chiqarilganlar" group exists
-    const { data: chiqarilganGroup } = await supabase.from('groups').select('id').eq('code', 'CHIQARILGAN').single();
+    const { data: chiqarilganGroup } = await supabase
+      .from('groups')
+      .select('id')
+      .eq('code', 'CHIQARILGAN')
+      .single();
     if (!chiqarilganGroup) {
       await supabase.from('groups').insert({
         name: '🛑 Talabalar safidan chiqarilganlar',

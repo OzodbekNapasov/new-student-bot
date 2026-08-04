@@ -17,10 +17,10 @@ export async function GET(req: Request) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Always sort alphabetically by student first_name & last_name
+  // Always sort alphabetically by Familiya Ism Sharif (last_name first_name)
   const sorted = (data || []).sort((a: any, b: any) => {
-    const nameA = `${a.user?.first_name || ''} ${a.user?.last_name || ''}`.trim().toLowerCase();
-    const nameB = `${b.user?.first_name || ''} ${b.user?.last_name || ''}`.trim().toLowerCase();
+    const nameA = `${a.user?.last_name || ''} ${a.user?.first_name || ''}`.trim().toLowerCase();
+    const nameB = `${b.user?.last_name || ''} ${b.user?.first_name || ''}`.trim().toLowerCase();
     return nameA.localeCompare(nameB, 'uz');
   });
 
@@ -34,18 +34,17 @@ export async function POST(req: Request) {
     const { telegram_id, group_id, first_name, last_name, username, student_card_number } = body;
 
     if (!group_id || (!first_name && !last_name)) {
-      return NextResponse.json(
-        { error: 'Talaba ismi va group_id kiritilishi shart' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Talaba ismi va group_id kiritilishi shart' }, { status: 400 });
     }
 
-    const tgId = telegram_id
-      ? String(telegram_id)
-      : `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const tgId = telegram_id ? String(telegram_id) : `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     // Find or create user
-    let { data: user } = await supabase.from('users').select('*').eq('telegram_id', tgId).single();
+    let { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('telegram_id', tgId)
+      .single();
 
     if (!user) {
       const { data: newUser, error: createErr } = await supabase

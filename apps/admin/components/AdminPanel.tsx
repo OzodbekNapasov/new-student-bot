@@ -45,7 +45,9 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   `;
 
   students.forEach((s, i) => {
-    const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
+    const fullName =
+      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+      `${s.user?.first_name || ''}`;
     const groupName = s.group?.name || s.group_name || 'Guruhsiz';
     tableHtml += `
       <tr>
@@ -416,7 +418,8 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                 <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-                    {group.name} <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
+                    {group.name}{' '}
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     👨‍🏫 Rahbar: <b>{leaderName}</b>
@@ -442,7 +445,9 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 
             {/* Collapsible Content Body */}
             {isExpanded && (
-              <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
+              <div
+                style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
+              >
                 <div
                   style={{
                     display: 'flex',
@@ -471,28 +476,68 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <div className="spinner" style={{ margin: '0 auto' }} />
                   </div>
                 ) : students.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
+                  <p
+                    style={{
+                      textAlign: 'center',
+                      color: 'var(--text-muted)',
+                      fontSize: 13,
+                      padding: 20,
+                    }}
+                  >
                     Ushbu guruhda hali talabalar yo'q.
                   </p>
                 ) : (
-                  <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
+                  <div
+                    style={{
+                      overflowX: 'auto',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                    }}
+                  >
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              width: 60,
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            T/R
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            Guruhi
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
+                          <tr
+                            key={s.id}
+                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
+                          >
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                              {idx + 1}
+                            </td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
+                              {group.name}
+                            </td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {s.user?.first_name} {s.user?.last_name}
+                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                             </td>
                           </tr>
                         ))}
@@ -597,7 +642,9 @@ function GroupCard({
         </div>
         <button
           className="btn btn-ghost btn-sm"
-          style={{ color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)' }}
+          style={{
+            color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)',
+          }}
           onClick={() => onCopy(group.login_code)}
         >
           {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
@@ -643,7 +690,7 @@ function GroupDetailModal({
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
   const [regenerating, setRegenerating] = useState(false);
-  
+
   // Editable Group Name & Leader Name states
   const [groupNameInput, setGroupNameInput] = useState(group.name);
   const [updatingGroupName, setUpdatingGroupName] = useState(false);
@@ -724,7 +771,10 @@ function GroupDetailModal({
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       {/* Spacious Desktop Modal (maxWidth: 860px) */}
-      <div className="modal" style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto' }}>
+      <div
+        className="modal"
+        style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto' }}
+      >
         <div
           style={{
             display: 'flex',
@@ -748,8 +798,14 @@ function GroupDetailModal({
         </div>
 
         {/* Top Controls Grid (Group Name Edit, Leader Edit, Login Code) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginBottom: 20 }}>
-          
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 14,
+            marginBottom: 20,
+          }}
+        >
           {/* Edit Group Name */}
           <div
             style={{
@@ -811,7 +867,14 @@ function GroupDetailModal({
               padding: 14,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 4,
+              }}
+            >
               <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>🔑 LOGIN KOD</p>
               <button
                 className="btn btn-ghost btn-sm"
@@ -824,13 +887,24 @@ function GroupDetailModal({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <code style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: '#fbbf24', flex: 1 }}>
+              <code
+                style={{
+                  fontSize: 22,
+                  fontWeight: 900,
+                  letterSpacing: 4,
+                  color: '#fbbf24',
+                  flex: 1,
+                }}
+              >
                 {group.login_code || '------'}
               </code>
               <button
                 className="btn btn-sm"
                 style={{
-                  background: copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+                  background:
+                    copiedCode === group.login_code
+                      ? 'rgba(16,185,129,0.2)'
+                      : 'rgba(245,158,11,0.2)',
                   color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
                   border: 'none',
                   fontSize: 12,
@@ -853,7 +927,9 @@ function GroupDetailModal({
               marginBottom: 12,
             }}
           >
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>👥 Guruh Talabalari ({students.length} nafar)</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>
+              👥 Guruh Talabalari ({students.length} nafar)
+            </h3>
             <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)}>
               ＋ Talaba Qo'shish
             </button>
@@ -882,11 +958,25 @@ function GroupDetailModal({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                    <th
+                      style={{
+                        padding: '12px 16px',
+                        width: 50,
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
+                      T/R
+                    </th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
+                    <th
+                      style={{
+                        padding: '12px 16px',
+                        textAlign: 'right',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
                       Amallar
                     </th>
                   </tr>
@@ -896,7 +986,7 @@ function GroupDetailModal({
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                       <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                        {s.user?.first_name} {s.user?.last_name}
+                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <button
@@ -998,8 +1088,12 @@ function TransferStudentModal({
     }
   };
 
-  const academicGroups = allGroups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId);
-  const statusGroups = allGroups.filter((g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId);
+  const academicGroups = allGroups.filter(
+    (g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId,
+  );
+  const statusGroups = allGroups.filter(
+    (g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId,
+  );
 
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -1035,7 +1129,10 @@ function TransferStudentModal({
           </p>
         </div>
 
-        <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form
+          onSubmit={handleTransfer}
+          style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+        >
           <div className="form-group">
             <label className="form-label">Qaysi guruhga o'tkazilsin? *</label>
             <select
@@ -1093,7 +1190,13 @@ function TransferStudentModal({
 // Add Group Modal with Leader Name Field
 // ============================================================
 function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [form, setForm] = useState({ name: '', code: '', faculty: '', academic_year: '', leader_name: '' });
+  const [form, setForm] = useState({
+    name: '',
+    code: '',
+    faculty: '',
+    academic_year: '',
+    leader_name: '',
+  });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
@@ -1302,7 +1405,9 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <label className="form-label">
+                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+              </label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"
