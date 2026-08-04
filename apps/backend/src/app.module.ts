@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AttendanceModule } from './attendance/attendance.module';
     GroupsModule,
     StudentsModule,
     AttendanceModule,
+    BotModule,
   ],
   controllers: [],
   providers: [],
