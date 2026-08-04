@@ -174,12 +174,10 @@ export async function createLeader(req: AuthRequest, res: Response) {
     return res.status(201).json({ success: true, leader });
   } catch (error) {
     console.error('Create leader error:', error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Failed to create leader. Email or Telegram ID may already exist.',
-      });
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create leader. Email or Telegram ID may already exist.',
+    });
   }
 }
 

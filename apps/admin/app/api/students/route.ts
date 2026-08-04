@@ -8,7 +8,9 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from('students')
-    .select('*, user:users(id, telegram_id, first_name, last_name, username), group:groups(id, name, code)');
+    .select(
+      '*, user:users(id, telegram_id, first_name, last_name, username), group:groups(id, name, code)',
+    );
 
   if (groupId) query = query.eq('group_id', groupId);
 
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
       .from('students')
       .upsert(
         { user_id: user.id, group_id, student_card_number: student_card_number || '' },
-        { onConflict: 'user_id,group_id' }
+        { onConflict: 'user_id,group_id' },
       )
       .select('*, user:users(id, telegram_id, first_name, last_name)')
       .single();

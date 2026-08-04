@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         {
           onConflict: 'telegram_id',
           ignoreDuplicates: false,
-        }
+        },
       )
       .select('*')
       .single();

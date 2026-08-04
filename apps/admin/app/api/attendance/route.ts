@@ -9,9 +9,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await supabase
     .from('attendance')
-    .select(
-      '*, student:students(id, user:users(id, telegram_id, first_name, last_name))'
-    )
+    .select('*, student:students(id, user:users(id, telegram_id, first_name, last_name))')
     .eq('group_id', groupId!)
     .eq('date', date);
 

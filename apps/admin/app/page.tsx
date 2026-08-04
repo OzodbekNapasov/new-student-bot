@@ -46,7 +46,13 @@ export default function Home() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: telegramId, first_name: firstName, last_name: lastName, username, photo_url: photoUrl }),
+        body: JSON.stringify({
+          telegram_id: telegramId,
+          first_name: firstName,
+          last_name: lastName,
+          username,
+          photo_url: photoUrl,
+        }),
       });
 
       if (!res.ok) throw new Error('Login failed');
@@ -61,7 +67,16 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 16,
+        }}
+      >
         <div className="spinner" style={{ width: 48, height: 48 }} />
         <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Yuklanmoqda...</p>
       </div>
@@ -70,11 +85,25 @@ export default function Home() {
 
   if (error || !user) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16, padding: 24 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 16,
+          padding: 24,
+        }}
+      >
         <span style={{ fontSize: 48 }}>⚠️</span>
         <h2 style={{ fontSize: 20, fontWeight: 700 }}>Xatolik yuz berdi</h2>
-        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: 14 }}>{error || 'Foydalanuvchi ma\'lumoti topilmadi'}</p>
-        <button className="btn btn-primary" onClick={login}>Qayta urinish</button>
+        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: 14 }}>
+          {error || "Foydalanuvchi ma'lumoti topilmadi"}
+        </p>
+        <button className="btn btn-primary" onClick={login}>
+          Qayta urinish
+        </button>
       </div>
     );
   }
