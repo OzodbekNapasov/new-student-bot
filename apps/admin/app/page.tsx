@@ -112,7 +112,9 @@ export default function Home() {
         }}
       >
         <Loader2 className="spinner-icon" size={44} style={{ color: '#38bdf8' }} />
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tizimga kirilmoqda...</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>
+          Tizimga kirilmoqda...
+        </p>
       </div>
     );
   }
@@ -195,7 +197,17 @@ export default function Home() {
             />
 
             {loginError && (
-              <p style={{ color: '#ef4444', fontSize: 13, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <p
+                style={{
+                  color: '#ef4444',
+                  fontSize: 13,
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
                 <AlertTriangle size={16} /> {loginError}
               </p>
             )}
@@ -237,7 +249,15 @@ export default function Home() {
           >
             <a
               href="https://t.me/new_students_shtt_bot"
-              style={{ color: '#38bdf8', fontSize: 13, textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              style={{
+                color: '#38bdf8',
+                fontSize: 13,
+                textDecoration: 'none',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
             >
               <Send size={15} /> Botga O'tish (@new_students_shtt_bot)
             </a>

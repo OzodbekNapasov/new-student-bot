@@ -151,7 +151,16 @@ export default function StudentPanel({ user }: Props) {
               {user.first_name} {user.last_name}
             </h1>
             {myStudentRecord?.group && (
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.7)',
+                  marginTop: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
                 <BookOpen size={14} /> {(myStudentRecord.group as any)?.name}
               </p>
             )}
@@ -195,13 +204,21 @@ export default function StudentPanel({ user }: Props) {
             className={`tab ${tab === 'today' ? 'active' : ''}`}
             onClick={() => setTab('today')}
           >
-            <ClipboardList size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Bugun
+            <ClipboardList
+              size={16}
+              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
+            />{' '}
+            Bugun
           </button>
           <button
             className={`tab ${tab === 'history' ? 'active' : ''}`}
             onClick={() => setTab('history')}
           >
-            <Calendar size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Tarix
+            <Calendar
+              size={16}
+              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
+            />{' '}
+            Tarix
           </button>
         </div>
       </div>
@@ -223,7 +240,11 @@ export default function StudentPanel({ user }: Props) {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-                {todayAtt ? renderStatusIcon(todayAtt.status) : <Clock size={44} style={{ color: 'var(--text-muted)' }} />}
+                {todayAtt ? (
+                  renderStatusIcon(todayAtt.status)
+                ) : (
+                  <Clock size={44} style={{ color: 'var(--text-muted)' }} />
+                )}
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
                 {todayAtt ? statusLabel[todayAtt.status] : 'Hali belgilanmagan'}

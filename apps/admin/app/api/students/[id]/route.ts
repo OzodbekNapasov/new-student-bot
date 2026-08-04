@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     const { group_id, student_card_number, is_active } = body;
 
-    const updates: any = { updated_at: new Date().toISOString() };
+    const updates: any = {};
     if (group_id !== undefined) updates.group_id = group_id;
     if (student_card_number !== undefined) updates.student_card_number = student_card_number;
     if (is_active !== undefined) updates.is_active = is_active;

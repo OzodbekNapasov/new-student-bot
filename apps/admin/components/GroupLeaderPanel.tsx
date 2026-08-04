@@ -78,7 +78,9 @@ export default function GroupLeaderPanel({ user }: Props) {
         }}
       >
         <Loader2 className="spinner-icon" size={44} style={{ color: '#38bdf8' }} />
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Guruh ma'lumotlari yuklanmoqda...</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+          Guruh ma'lumotlari yuklanmoqda...
+        </p>
       </div>
     );
   }
@@ -104,7 +106,11 @@ export default function GroupLeaderPanel({ user }: Props) {
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: 14 }}>
           Admin sizga guruh biriktirishi kerak. Admin bilan bog'laning.
         </p>
-        <button className="btn btn-ghost" onClick={fetchMyGroup} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <button
+          className="btn btn-ghost"
+          onClick={fetchMyGroup}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        >
           <RefreshCw size={16} /> Yangilash
         </button>
       </div>
@@ -158,7 +164,16 @@ export default function GroupLeaderPanel({ user }: Props) {
               <h1 style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>
                 {user.first_name} {user.last_name}
               </h1>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.7)',
+                  marginTop: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
                 <BookOpen size={14} /> Guruh: <b>{myGroup.name}</b> ({myGroup.code})
               </p>
             </div>
@@ -213,7 +228,12 @@ export default function GroupLeaderPanel({ user }: Props) {
           </div>
           <button
             className="btn btn-primary"
-            style={{ boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            style={{
+              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
             onClick={() => setShowAddStudent(true)}
           >
             <Plus size={18} /> Talaba Qo'shish
@@ -231,11 +251,19 @@ export default function GroupLeaderPanel({ user }: Props) {
             marginBottom: 14,
           }}
         >
-          <h3 style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3
+            style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
             <Users size={20} style={{ color: '#38bdf8' }} /> Guruh Talabalari Ro'yxati{' '}
-            <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}>(Familiya Ism Sharif)</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}>
+              (Familiya Ism Sharif)
+            </span>
           </h3>
-          <button className="btn btn-ghost btn-sm" onClick={fetchMyGroup} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={fetchMyGroup}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
             <RefreshCw size={14} /> Yangilash
           </button>
         </div>
@@ -435,7 +463,9 @@ function AddStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2
+            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
             <UserPlus size={20} style={{ color: '#38bdf8' }} /> Talaba Qo'shish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -457,7 +487,15 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            style={{
+              flex: 1,
+              borderRadius: 8,
+              fontSize: 13,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
             onClick={() => setMode('single')}
           >
             <UserIcon size={15} /> Bittalab
@@ -465,7 +503,15 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            style={{
+              flex: 1,
+              borderRadius: 8,
+              fontSize: 13,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
             onClick={() => setMode('bulk')}
           >
             <ListPlus size={15} /> Ro'yxat bo'yicha
@@ -505,7 +551,15 @@ function AddStudentModal({
           )}
 
           {err && (
-            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <p
+              style={{
+                color: 'var(--accent-red)',
+                fontSize: 13,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -517,7 +571,13 @@ function AddStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              style={{
+                flex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+              }}
               disabled={saving}
             >
               {saving ? (
@@ -603,7 +663,9 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2
+            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
             <ArrowRightLeft size={20} style={{ color: '#38bdf8' }} /> Talabani Ko'chirish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -620,7 +682,16 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: '#38bdf8',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
             <UserIcon size={16} /> <b>{fullName}</b>
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
@@ -686,7 +757,15 @@ function TransferStudentModal({
           </div>
 
           {err && (
-            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <p
+              style={{
+                color: 'var(--accent-red)',
+                fontSize: 13,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -698,7 +777,13 @@ function TransferStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              style={{
+                flex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+              }}
               disabled={saving || !selectedGroupId}
             >
               {saving ? (

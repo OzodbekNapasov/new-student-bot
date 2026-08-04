@@ -40,6 +40,7 @@ import {
   Clock,
   Sparkles,
   Layers,
+  CheckCircle2,
 } from 'lucide-react';
 
 // ============================================================
@@ -103,6 +104,13 @@ export default function AdminPanel({ user }: { user: User }) {
       setLoading(false);
     }
   }
+
+  const handleGroupUpdatedSilently = (updatedGroup: Group) => {
+    setGroups((prev) => prev.map((g) => (g.id === updatedGroup.id ? updatedGroup : g)));
+    if (showGroupDetail && showGroupDetail.id === updatedGroup.id) {
+      setShowGroupDetail(updatedGroup);
+    }
+  };
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -395,10 +403,7 @@ export default function AdminPanel({ user }: { user: User }) {
           copiedCode={copiedCode}
           onCopy={copyCode}
           onClose={() => setShowGroupDetail(null)}
-          onRefresh={() => {
-            setShowGroupDetail(null);
-            fetchGroups();
-          }}
+          onGroupUpdatedSilently={handleGroupUpdatedSilently}
         />
       )}
     </div>
@@ -430,13 +435,11 @@ function HistoryView({ groups }: { groups: Group[] }) {
     }
   }
 
-  // Filter students created on selectedDate
   const dayStudents = allStudents.filter((s) => {
     if (!s.created_at) return false;
     return s.created_at.startsWith(selectedDate);
   });
 
-  // Calculate monthly stats
   const monthlyStats: Record<string, { count: number; students: any[] }> = {};
   allStudents.forEach((s) => {
     if (s.created_at) {
@@ -464,7 +467,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Date Filter & Daily Activity Log Header */}
       <div
         style={{
           display: 'flex',
@@ -501,7 +503,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
         </div>
       </div>
 
-      {/* Daily Changes Card */}
       <div className="card">
         <div
           style={{
@@ -548,40 +549,10 @@ function HistoryView({ groups }: { groups: Group[] }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                  <th
-                    style={{
-                      padding: '10px 14px',
-                      width: 60,
-                      borderBottom: '1px solid var(--border)',
-                    }}
-                  >
-                    T/R
-                  </th>
-                  <th
-                    style={{
-                      padding: '10px 14px',
-                      width: 100,
-                      borderBottom: '1px solid var(--border)',
-                    }}
-                  >
-                    Soati
-                  </th>
-                  <th
-                    style={{
-                      padding: '10px 14px',
-                      borderBottom: '1px solid var(--border)',
-                    }}
-                  >
-                    Guruhi
-                  </th>
-                  <th
-                    style={{
-                      padding: '10px 14px',
-                      borderBottom: '1px solid var(--border)',
-                    }}
-                  >
-                    Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
-                  </th>
+                  <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                  <th style={{ padding: '10px 14px', width: 100, borderBottom: '1px solid var(--border)' }}>Soati</th>
+                  <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
+                  <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)</th>
                 </tr>
               </thead>
               <tbody>
@@ -597,15 +568,9 @@ function HistoryView({ groups }: { groups: Group[] }) {
                     : '—';
                   return (
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                        {idx + 1}
-                      </td>
-                      <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
-                        {timeStr}
-                      </td>
-                      <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
-                        {s.group?.name || 'Guruhsiz'}
-                      </td>
+                      <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>{timeStr}</td>
+                      <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{s.group?.name || 'Guruhsiz'}</td>
                       <td style={{ padding: '10px 14px', fontWeight: 600 }}>{fullName}</td>
                     </tr>
                   );
@@ -616,7 +581,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
         )}
       </div>
 
-      {/* Monthly Statistics Card */}
       <div className="card">
         <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
           <TrendingUp size={20} style={{ color: '#34d399' }} /> Oylar bo'yicha talabalar kelishi
@@ -643,8 +607,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                     <Calendar size={16} /> {month}
                   </h4>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    Jami qo'shilgan talabalar:{' '}
-                    <b style={{ color: '#34d399' }}>{item.count} nafar</b>
+                    Jami qo'shilgan talabalar: <b style={{ color: '#34d399' }}>{item.count} nafar</b>
                   </p>
                 </div>
                 <button
@@ -664,7 +627,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
 }
 
 // ============================================================
-// Accordion Students View with Excel Export
+// Accordion Students View
 // ============================================================
 function AccordionStudentsView({ groups }: { groups: Group[] }) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(groups[0]?.id || null);
@@ -777,7 +740,6 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
               transition: 'all 0.2s',
             }}
           >
-            {/* Header Accordion Bar */}
             <div
               onClick={() => toggleGroup(group.id)}
               style={{
@@ -839,7 +801,6 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
               </div>
             </div>
 
-            {/* Collapsible Content Body */}
             {isExpanded && (
               <div
                 style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
@@ -893,48 +854,18 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              width: 60,
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            T/R
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            Guruhi
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
-                          </th>
+                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr
-                            key={s.id}
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                          >
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                              {idx + 1}
-                            </td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
-                              {group.name}
-                            </td>
+                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-                                `${s.user?.first_name || ''}`}
+                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                             </td>
                           </tr>
                         ))}
@@ -1017,12 +948,11 @@ function GroupCard({
             </span>
           ) : (
             <span className={`badge ${group.leader_id ? 'badge-green' : 'badge-yellow'}`}>
-              {group.leader_id ? "✓ Rahbar bor" : '⏳ Kutilmoqda'}
+              {group.leader_id ? '✓ Rahbar bor' : '⏳ Kutilmoqda'}
             </span>
           )}
         </div>
 
-        {/* Leader Info (Only for active academic groups) */}
         {!isStatusGroup && (
           <div
             style={{
@@ -1068,23 +998,24 @@ function GroupCard({
 }
 
 // ============================================================
-// Group Detail Modal with Wide Layout, Name Editing & Student Transfer
+// Group Detail Modal (Live Update without closing modal)
 // ============================================================
 function GroupDetailModal({
-  group,
+  group: initialGroup,
   allGroups,
   copiedCode,
   onCopy,
   onClose,
-  onRefresh,
+  onGroupUpdatedSilently,
 }: {
   group: Group;
   allGroups: Group[];
   copiedCode: string | null;
   onCopy: (code: string) => void;
   onClose: () => void;
-  onRefresh: () => void;
+  onGroupUpdatedSilently: (updatedGroup: Group) => void;
 }) {
+  const [currentGroup, setCurrentGroup] = useState<Group>(initialGroup);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddStudent, setShowAddStudent] = useState(false);
@@ -1092,22 +1023,37 @@ function GroupDetailModal({
   const [regenerating, setRegenerating] = useState(false);
 
   // Editable Group Name & Leader Name states
-  const [groupNameInput, setGroupNameInput] = useState(group.name);
+  const [groupNameInput, setGroupNameInput] = useState(initialGroup.name);
   const [updatingGroupName, setUpdatingGroupName] = useState(false);
   const [leaderNameInput, setLeaderNameInput] = useState(
-    group.leader ? `${group.leader.first_name} ${group.leader.last_name}`.trim() : '',
+    initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
   );
   const [updatingLeader, setUpdatingLeader] = useState(false);
-  const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const isStatusGroup = currentGroup.code === 'AKADEMIK' || currentGroup.code === 'CHIQARILGAN';
+
+  useEffect(() => {
+    setCurrentGroup(initialGroup);
+    setGroupNameInput(initialGroup.name);
+    setLeaderNameInput(
+      initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
+    );
+  }, [initialGroup]);
 
   useEffect(() => {
     fetchStudents();
-  }, [group.id]);
+  }, [currentGroup.id]);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
 
   async function fetchStudents() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/students?group_id=${group.id}`);
+      const res = await fetch(`/api/students?group_id=${currentGroup.id}`);
       const data = await res.json();
       setStudents(data.students || []);
     } catch (e) {
@@ -1122,14 +1068,21 @@ function GroupDetailModal({
     if (!groupNameInput.trim()) return;
     setUpdatingGroupName(true);
     try {
-      await fetch(`/api/groups/${group.id}`, {
+      const res = await fetch(`/api/groups/${currentGroup.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: groupNameInput.trim() }),
       });
-      onRefresh();
-    } catch (e) {
-      console.error(e);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Guruh nomini o'zgartirishda xatolik");
+
+      if (data.group) {
+        setCurrentGroup(data.group);
+        onGroupUpdatedSilently(data.group);
+        showToast("Guruh nomi jonli saqlandi!");
+      }
+    } catch (e: any) {
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingGroupName(false);
     }
@@ -1140,14 +1093,21 @@ function GroupDetailModal({
     if (!leaderNameInput.trim()) return;
     setUpdatingLeader(true);
     try {
-      await fetch(`/api/groups/${group.id}`, {
+      const res = await fetch(`/api/groups/${currentGroup.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leader_name: leaderNameInput.trim() }),
       });
-      onRefresh();
-    } catch (e) {
-      console.error(e);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Rahbar nomini o'zgartirishda xatolik");
+
+      if (data.group) {
+        setCurrentGroup(data.group);
+        onGroupUpdatedSilently(data.group);
+        showToast("Guruh rahbari jonli saqlandi!");
+      }
+    } catch (e: any) {
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingLeader(false);
     }
@@ -1157,16 +1117,24 @@ function GroupDetailModal({
     if (!confirm("Login kodni yangilamoqchimisiz? Eski kod o'z kuchini yo'qotadi.")) return;
     setRegenerating(true);
     try {
-      await fetch(`/api/groups/${group.id}`, {
+      const res = await fetch(`/api/groups/${currentGroup.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ regenerate_code: true }),
       });
-      onRefresh();
-    } catch (e) {
-      console.error(e);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      if (data.group) {
+        setCurrentGroup(data.group);
+        onGroupUpdatedSilently(data.group);
+        showToast("Login kod yangilandi!");
+      }
+    } catch (e: any) {
+      alert(e.message || "Xatolik yuz berdi");
+    } finally {
+      setRegenerating(false);
     }
-    setRegenerating(false);
   };
 
   return (
@@ -1174,8 +1142,33 @@ function GroupDetailModal({
       {/* Spacious Desktop Modal (maxWidth: 860px) */}
       <div
         className="modal"
-        style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}
       >
+        {/* Success Notification Toast */}
+        {toastMsg && (
+          <div
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              background: '#059669',
+              color: '#ffffff',
+              padding: '10px 16px',
+              borderRadius: 10,
+              marginBottom: 14,
+              fontSize: 13,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)',
+            }}
+          >
+            <CheckCircle2 size={18} /> {toastMsg}
+          </div>
+        )}
+
         <div
           style={{
             display: 'flex',
@@ -1187,10 +1180,23 @@ function GroupDetailModal({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <BookOpen size={28} style={{ color: '#38bdf8' }} />
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+              }}
+            >
+              <BookOpen size={24} />
+            </div>
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 800 }}>{group.name} Boshqaruvi</h2>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {group.code}</p>
+              <h2 style={{ fontSize: 22, fontWeight: 800 }}>{currentGroup.name} Boshqaruvi</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {currentGroup.code}</p>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -1212,23 +1218,36 @@ function GroupDetailModal({
             style={{
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid var(--border)',
-              borderRadius: 12,
-              padding: 14,
+              borderRadius: 14,
+              padding: 16,
             }}
           >
-            <label className="form-label" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Edit3 size={15} /> Guruh Nomi (To'liq o'zgartirish)
+            <label
+              className="form-label"
+              style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
+            >
+              <Edit3 size={15} style={{ color: '#38bdf8' }} /> GURUH NOMI (TO'LIQ O'ZGARTIRISH)
             </label>
             <form onSubmit={handleSaveGroupName} style={{ display: 'flex', gap: 8 }}>
               <input
                 className="input"
-                style={{ flex: 1 }}
+                style={{ flex: 1, fontSize: 14, fontWeight: 600 }}
                 value={groupNameInput}
                 onChange={(e) => setGroupNameInput(e.target.value)}
                 placeholder="Guruh nomi"
               />
-              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingGroupName} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                {updatingGroupName ? <Loader2 className="spinner-icon" size={14} /> : <Check size={14} />} Saqlash
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={updatingGroupName}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
+              >
+                {updatingGroupName ? (
+                  <Loader2 className="spinner-icon" size={14} />
+                ) : (
+                  <Check size={14} />
+                )}{' '}
+                Saqlash
               </button>
             </form>
           </div>
@@ -1239,23 +1258,36 @@ function GroupDetailModal({
               style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid var(--border)',
-                borderRadius: 12,
-                padding: 14,
+                borderRadius: 14,
+                padding: 16,
               }}
             >
-              <label className="form-label" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <UserCheck size={15} /> Guruh Rahbari (F.I.Sh)
+              <label
+                className="form-label"
+                style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
+              >
+                <UserCheck size={15} style={{ color: '#34d399' }} /> GURUH RAHBARI (F.I.SH)
               </label>
               <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
                 <input
                   className="input"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, fontSize: 14, fontWeight: 600 }}
                   placeholder="Masalan: Sardor Aliyev"
                   value={leaderNameInput}
                   onChange={(e) => setLeaderNameInput(e.target.value)}
                 />
-                <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  {updatingLeader ? <Loader2 className="spinner-icon" size={14} /> : <Check size={14} />} Saqlash
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={updatingLeader}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
+                >
+                  {updatingLeader ? (
+                    <Loader2 className="spinner-icon" size={14} />
+                  ) : (
+                    <Check size={14} />
+                  )}{' '}
+                  Saqlash
                 </button>
               </form>
             </div>
@@ -1265,10 +1297,10 @@ function GroupDetailModal({
           {!isStatusGroup && (
             <div
               style={{
-                background: 'rgba(245,158,11,0.08)',
+                background: 'rgba(245,158,11,0.06)',
                 border: '1px solid rgba(245,158,11,0.2)',
-                borderRadius: 12,
-                padding: 14,
+                borderRadius: 14,
+                padding: 16,
               }}
             >
               <div
@@ -1276,7 +1308,7 @@ function GroupDetailModal({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: 4,
+                  marginBottom: 6,
                 }}
               >
                 <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1284,7 +1316,7 @@ function GroupDetailModal({
                 </p>
                 <button
                   className="btn btn-ghost btn-sm"
-                  style={{ fontSize: 10, color: 'var(--accent-red)', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  style={{ fontSize: 11, color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   onClick={regenerateCode}
                   disabled={regenerating}
                 >
@@ -1302,25 +1334,27 @@ function GroupDetailModal({
                     flex: 1,
                   }}
                 >
-                  {group.login_code || '------'}
+                  {currentGroup.login_code || '------'}
                 </code>
                 <button
                   className="btn btn-sm"
                   style={{
                     background:
-                      copiedCode === group.login_code
+                      copiedCode === currentGroup.login_code
                         ? 'rgba(16,185,129,0.2)'
                         : 'rgba(245,158,11,0.2)',
-                    color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
+                    color: copiedCode === currentGroup.login_code ? '#34d399' : '#fbbf24',
                     border: 'none',
                     fontSize: 12,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 4,
+                    padding: '6px 12px',
+                    borderRadius: 8,
                   }}
-                  onClick={() => onCopy(group.login_code)}
+                  onClick={() => onCopy(currentGroup.login_code)}
                 >
-                  {copiedCode === group.login_code ? (
+                  {copiedCode === currentGroup.login_code ? (
                     <>
                       <Check size={14} /> Nusxalandi
                     </>
@@ -1437,11 +1471,12 @@ function GroupDetailModal({
         {/* Modals */}
         {showAddStudent && (
           <AddStudentModal
-            groupId={group.id}
+            groupId={currentGroup.id}
             onClose={() => setShowAddStudent(false)}
             onSuccess={() => {
               setShowAddStudent(false);
               fetchStudents();
+              showToast("Yangi talaba qo'shildi!");
             }}
           />
         )}
@@ -1450,12 +1485,12 @@ function GroupDetailModal({
           <TransferStudentModal
             student={transferringStudent}
             allGroups={allGroups}
-            currentGroupId={group.id}
+            currentGroupId={currentGroup.id}
             onClose={() => setTransferringStudent(null)}
             onSuccess={() => {
               setTransferringStudent(null);
               fetchStudents();
-              onRefresh();
+              showToast("Talaba yangi guruhga ko'chirildi!");
             }}
           />
         )}
@@ -1503,10 +1538,10 @@ function TransferStudentModal({
         body: JSON.stringify({ group_id: selectedGroupId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Talabani ko'chirishda xatolik");
       onSuccess();
     } catch (e: any) {
-      setErr(e.message);
+      setErr(e.message || "Xatolik yuz berdi");
     } finally {
       setSaving(false);
     }
@@ -1765,7 +1800,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
 }
 
 // ============================================================
-// Add Student Modal (Single F.I.Sh + Bulk List Mode)
+// Add Student Modal
 // ============================================================
 function AddStudentModal({
   groupId,
@@ -1853,7 +1888,6 @@ function AddStudentModal({
           </button>
         </div>
 
-        {/* Mode Switcher Tabs */}
         <div
           style={{
             display: 'flex',
