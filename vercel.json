@@ -2,5 +2,11 @@
   "buildCommand": "next build",
   "installCommand": "npm install",
   "outputDirectory": ".next",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/daily-reminder?secret=cron-secret-2026",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }

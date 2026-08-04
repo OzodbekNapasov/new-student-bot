@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { notifyStudentsBulkAdded } from '@/lib/telegramNotify';
 
 // POST /api/students/bulk — Add multiple students to a group from line-separated names
 export async function POST(req: Request) {
@@ -23,7 +24,18 @@ export async function POST(req: Request) {
       );
     }
 
+    // Fetch group info for the notification (leader telegram_id)
+    const { data: groupData } = await supabase
+      .from('groups')
+      .select('id, name, code, leader:users!groups_leader_id_fkey(telegram_id)')
+      .eq('id', group_id)
+      .single();
+
+    const groupName = groupData?.name || "Noma'lum guruh";
+    const leaderTgId = (groupData as any)?.leader?.telegram_id || null;
+
     const addedStudents = [];
+    const addedNames: string[] = [];
 
     for (const fullName of cleanNames) {
       const parts = fullName.split(' ').filter(Boolean);
@@ -56,7 +68,19 @@ export async function POST(req: Request) {
         .select('*, user:users(*)')
         .single();
 
-      if (student) addedStudents.push(student);
+      if (student) {
+        addedStudents.push(student);
+        addedNames.push(fullName);
+      }
+    }
+
+    // Send Telegram notification for all added students (non-blocking)
+    if (addedNames.length > 0) {
+      notifyStudentsBulkAdded({
+        studentNames: addedNames,
+        groupName,
+        leaderTelegramId: leaderTgId,
+      }).catch(() => {});
     }
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { notifyStudentAdded } from '@/lib/telegramNotify';
 
 // GET /api/students?group_id=xxx
 export async function GET(req: Request) {
@@ -71,11 +72,24 @@ export async function POST(req: Request) {
         { onConflict: 'user_id,group_id' },
       )
       .select(
-        '*, user:users(id, telegram_id, first_name, last_name, photo_url, created_at, updated_at)',
+        '*, user:users(id, telegram_id, first_name, last_name, photo_url, created_at, updated_at), group:groups(id, name, code, leader:users!groups_leader_id_fkey(telegram_id))',
       )
       .single();
 
     if (studentErr) return NextResponse.json({ error: studentErr.message }, { status: 500 });
+
+    // Send real-time Telegram notification to group leader and admin (non-blocking)
+    const fullName = `${last_name || ''} ${first_name || ''}`.trim() || first_name || '';
+    const groupName = (student as any)?.group?.name || "Noma'lum guruh";
+    const leaderTgId = (student as any)?.group?.leader?.telegram_id || null;
+
+    // Fire-and-forget — don't block the response
+    notifyStudentAdded({
+      studentFullName: fullName,
+      groupName,
+      leaderTelegramId: leaderTgId,
+    }).catch(() => {});
+
     return NextResponse.json({ student });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

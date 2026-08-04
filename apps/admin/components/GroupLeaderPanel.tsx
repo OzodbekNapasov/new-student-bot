@@ -554,8 +554,7 @@ function EditStudentModal({
               >
                 {transferLogs.map((log: any, idx: number) => (
                   <div key={idx} style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>
-                    • {log.from_group_name} ➔ {log.to_group_name} (
-                    {formatDateExcel(log.timestamp)})
+                    • {log.from_group_name} ➔ {log.to_group_name} ({formatDateExcel(log.timestamp)})
                   </div>
                 ))}
               </div>
