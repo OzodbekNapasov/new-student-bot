@@ -11,8 +11,36 @@ function generateLoginCode(): string {
   return code;
 }
 
-// GET /api/groups
+// GET /api/groups (Auto-ensures special status groups exist)
 export async function GET() {
+  try {
+    // Ensure "Akademik ta'til olganlar" group exists
+    const { data: akademikGroup } = await supabase.from('groups').select('id').eq('code', 'AKADEMIK').single();
+    if (!akademikGroup) {
+      await supabase.from('groups').insert({
+        name: "🎓 Akademik ta'til olganlar",
+        code: 'AKADEMIK',
+        faculty: 'Maxsus status',
+        academic_year: 'Tizim',
+        login_code: 'AKAD01',
+      });
+    }
+
+    // Ensure "Talabalar safidan chiqarilganlar" group exists
+    const { data: chiqarilganGroup } = await supabase.from('groups').select('id').eq('code', 'CHIQARILGAN').single();
+    if (!chiqarilganGroup) {
+      await supabase.from('groups').insert({
+        name: '🛑 Talabalar safidan chiqarilganlar',
+        code: 'CHIQARILGAN',
+        faculty: 'Maxsus status',
+        academic_year: 'Tizim',
+        login_code: 'CHIQ01',
+      });
+    }
+  } catch (e) {
+    console.error('Error auto-creating status groups:', e);
+  }
+
   const { data, error } = await supabase
     .from('groups')
     .select('*, leader:users!groups_leader_id_fkey(id, telegram_id, first_name, last_name)')

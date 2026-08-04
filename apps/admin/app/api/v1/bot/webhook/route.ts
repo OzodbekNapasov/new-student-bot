@@ -141,7 +141,8 @@ bot.start(async (ctx) => {
       .eq('leader_id', user.id)
       .single();
 
-    const leaderName = `${user.first_name || tgUser.first_name} ${user.last_name || tgUser.last_name || ''}`.trim();
+    const leaderName =
+      `${user.first_name || tgUser.first_name} ${user.last_name || tgUser.last_name || ''}`.trim();
     const groupText = group ? `*${group.name}* (${group.code})` : 'Biriktirilmagan';
     const studentCount = group?.students?.[0]?.count || 0;
 
@@ -423,7 +424,8 @@ bot.on('text', async (ctx) => {
       .single();
 
     const studentCount = updatedGroup?.students?.[0]?.count || 0;
-    const leaderName = `${user?.first_name || tgUser.first_name} ${user?.last_name || tgUser.last_name || ''}`.trim();
+    const leaderName =
+      `${user?.first_name || tgUser.first_name} ${user?.last_name || tgUser.last_name || ''}`.trim();
 
     await setState(telegramId, null);
 

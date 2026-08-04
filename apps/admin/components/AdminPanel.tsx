@@ -45,9 +45,7 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   `;
 
   students.forEach((s, i) => {
-    const fullName =
-      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-      `${s.user?.first_name || ''}`;
+    const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
     const groupName = s.group?.name || s.group_name || 'Guruhsiz';
     tableHtml += `
       <tr>
@@ -277,6 +275,7 @@ export default function AdminPanel({ user }: { user: User }) {
       {showGroupDetail && (
         <GroupDetailModal
           group={showGroupDetail}
+          allGroups={groups}
           copiedCode={copiedCode}
           onCopy={copyCode}
           onClose={() => setShowGroupDetail(null)}
@@ -417,8 +416,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                 <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-                    {group.name}{' '}
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
+                    {group.name} <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     👨‍🏫 Rahbar: <b>{leaderName}</b>
@@ -444,9 +442,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 
             {/* Collapsible Content Body */}
             {isExpanded && (
-              <div
-                style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
-              >
+              <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -475,66 +471,26 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <div className="spinner" style={{ margin: '0 auto' }} />
                   </div>
                 ) : students.length === 0 ? (
-                  <p
-                    style={{
-                      textAlign: 'center',
-                      color: 'var(--text-muted)',
-                      fontSize: 13,
-                      padding: 20,
-                    }}
-                  >
+                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
                     Ushbu guruhda hali talabalar yo'q.
                   </p>
                 ) : (
-                  <div
-                    style={{
-                      overflowX: 'auto',
-                      borderRadius: 10,
-                      border: '1px solid var(--border)',
-                    }}
-                  >
+                  <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              width: 60,
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            T/R
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
-                            Guruhi
-                          </th>
-                          <th
-                            style={{
-                              padding: '10px 14px',
-                              borderBottom: '1px solid var(--border)',
-                            }}
-                          >
+                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
+                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr
-                            key={s.id}
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                          >
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                              {idx + 1}
-                            </td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
-                              {group.name}
-                            </td>
+                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
                               {s.user?.first_name} {s.user?.last_name}
                             </td>
@@ -641,9 +597,7 @@ function GroupCard({
         </div>
         <button
           className="btn btn-ghost btn-sm"
-          style={{
-            color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)',
-          }}
+          style={{ color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)' }}
           onClick={() => onCopy(group.login_code)}
         >
           {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
@@ -667,16 +621,18 @@ function GroupCard({
 }
 
 // ============================================================
-// Group Detail Modal with Leader Name Editing
+// Group Detail Modal with Wide Layout, Name Editing & Student Transfer
 // ============================================================
 function GroupDetailModal({
   group,
+  allGroups,
   copiedCode,
   onCopy,
   onClose,
   onRefresh,
 }: {
   group: Group;
+  allGroups: Group[];
   copiedCode: string | null;
   onCopy: (code: string) => void;
   onClose: () => void;
@@ -685,7 +641,12 @@ function GroupDetailModal({
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddStudent, setShowAddStudent] = useState(false);
+  const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  
+  // Editable Group Name & Leader Name states
+  const [groupNameInput, setGroupNameInput] = useState(group.name);
+  const [updatingGroupName, setUpdatingGroupName] = useState(false);
   const [leaderNameInput, setLeaderNameInput] = useState(
     group.leader ? `${group.leader.first_name} ${group.leader.last_name}`.trim() : '',
   );
@@ -708,20 +669,22 @@ function GroupDetailModal({
     }
   }
 
-  const regenerateCode = async () => {
-    if (!confirm("Login kodni yangilamoqchimisiz? Eski kod o'z kuchini yo'qotadi.")) return;
-    setRegenerating(true);
+  const handleSaveGroupName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!groupNameInput.trim()) return;
+    setUpdatingGroupName(true);
     try {
       await fetch(`/api/groups/${group.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regenerate_code: true }),
+        body: JSON.stringify({ name: groupNameInput.trim() }),
       });
       onRefresh();
     } catch (e) {
       console.error(e);
+    } finally {
+      setUpdatingGroupName(false);
     }
-    setRegenerating(false);
   };
 
   const handleSaveLeaderName = async (e: React.FormEvent) => {
@@ -742,178 +705,224 @@ function GroupDetailModal({
     }
   };
 
+  const regenerateCode = async () => {
+    if (!confirm("Login kodni yangilamoqchimisiz? Eski kod o'z kuchini yo'qotadi.")) return;
+    setRegenerating(true);
+    try {
+      await fetch(`/api/groups/${group.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regenerate_code: true }),
+      });
+      onRefresh();
+    } catch (e) {
+      console.error(e);
+    }
+    setRegenerating(false);
+  };
+
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ maxWidth: 540, maxHeight: '90vh', overflowY: 'auto' }}>
+      {/* Spacious Desktop Modal (maxWidth: 860px) */}
+      <div className="modal" style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto' }}>
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 16,
+            marginBottom: 20,
+            paddingBottom: 12,
+            borderBottom: '1px solid var(--border)',
           }}
         >
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800 }}>{group.name}</h2>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{group.code}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 28 }}>📚</span>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 800 }}>{group.name} Boshqaruvi</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {group.code}</p>
+            </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             ✕
           </button>
         </div>
 
-        {/* Login Code Card */}
-        <div
-          style={{
-            background: 'rgba(245,158,11,0.08)',
-            border: '1px solid rgba(245,158,11,0.2)',
-            borderRadius: 12,
-            padding: 14,
-            marginBottom: 16,
-          }}
-        >
+        {/* Top Controls Grid (Group Name Edit, Leader Edit, Login Code) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginBottom: 20 }}>
+          
+          {/* Edit Group Name */}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              padding: 14,
+            }}
+          >
+            <label className="form-label" style={{ marginBottom: 6 }}>
+              ✏️ Guruh Nomi (To'liq o'zgartirish)
+            </label>
+            <form onSubmit={handleSaveGroupName} style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="input"
+                style={{ flex: 1 }}
+                value={groupNameInput}
+                onChange={(e) => setGroupNameInput(e.target.value)}
+                placeholder="Guruh nomi"
+              />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingGroupName}>
+                {updatingGroupName ? '⏳' : '✓ Saqlash'}
+              </button>
+            </form>
+          </div>
+
+          {/* Edit Leader Name */}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              padding: 14,
+            }}
+          >
+            <label className="form-label" style={{ marginBottom: 6 }}>
+              👨‍🏫 Guruh Rahbari (F.I.Sh)
+            </label>
+            <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="input"
+                style={{ flex: 1 }}
+                placeholder="Masalan: Sardor Aliyev"
+                value={leaderNameInput}
+                onChange={(e) => setLeaderNameInput(e.target.value)}
+              />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader}>
+                {updatingLeader ? '⏳' : '✓ Saqlash'}
+              </button>
+            </form>
+          </div>
+
+          {/* Login Code Card */}
+          <div
+            style={{
+              background: 'rgba(245,158,11,0.08)',
+              border: '1px solid rgba(245,158,11,0.2)',
+              borderRadius: 12,
+              padding: 14,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>🔑 LOGIN KOD</p>
+              <button
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: 10, color: 'var(--accent-red)' }}
+                onClick={regenerateCode}
+                disabled={regenerating}
+              >
+                🔄 Yangilash
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <code style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: '#fbbf24', flex: 1 }}>
+                {group.login_code || '------'}
+              </code>
+              <button
+                className="btn btn-sm"
+                style={{
+                  background: copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+                  color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
+                  border: 'none',
+                  fontSize: 12,
+                }}
+                onClick={() => onCopy(group.login_code)}
+              >
+                {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Students Section */}
+        <div>
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: 6,
+              marginBottom: 12,
             }}
           >
-            <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
-              🔑 Rahbar uchun Login Kodi
-            </p>
-            <button
-              className="btn btn-ghost btn-sm"
-              style={{ fontSize: 11, color: 'var(--accent-red)' }}
-              onClick={regenerateCode}
-              disabled={regenerating}
-            >
-              🔄 Qayta yaratish
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <code
-              style={{ fontSize: 26, fontWeight: 900, letterSpacing: 4, color: '#fbbf24', flex: 1 }}
-            >
-              {group.login_code || '------'}
-            </code>
-            <button
-              className="btn btn-sm"
-              style={{
-                background:
-                  copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
-                color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
-                border: 'none',
-              }}
-              onClick={() => onCopy(group.login_code)}
-            >
-              {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
-            </button>
-          </div>
-        </div>
-
-        {/* Group Leader Name Input / Edit */}
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            padding: 14,
-            marginBottom: 16,
-          }}
-        >
-          <label className="form-label" style={{ marginBottom: 6 }}>
-            👨‍🏫 Guruh Rahbari (Ism va Familiyasi)
-          </label>
-          <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
-            <input
-              className="input"
-              style={{ flex: 1 }}
-              placeholder="Masalan: Sardor Aliyev"
-              value={leaderNameInput}
-              onChange={(e) => setLeaderNameInput(e.target.value)}
-            />
-            <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader}>
-              {updatingLeader ? '⏳' : '✓ Saqlash'}
-            </button>
-          </form>
-        </div>
-
-        {/* Students List */}
-        <div style={{ marginBottom: 16 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 10,
-            }}
-          >
-            <p style={{ fontWeight: 700 }}>👥 Talabalar ({students.length})</p>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>👥 Guruh Talabalari ({students.length} nafar)</h3>
             <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)}>
               ＋ Talaba Qo'shish
             </button>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: 20 }}>
+            <div style={{ textAlign: 'center', padding: 30 }}>
               <div className="spinner" style={{ margin: '0 auto' }} />
             </div>
           ) : students.length === 0 ? (
             <div
               style={{
                 textAlign: 'center',
-                padding: '20px',
+                padding: '30px',
                 color: 'var(--text-muted)',
                 fontSize: 13,
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: 12,
+                border: '1px dashed var(--border)',
               }}
             >
-              Talabalar yo'q
+              Ushbu guruhda hali talabalar yo'q. "＋ Talaba Qo'shish" tugmasi orqali kiriting.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {students.map((s, i) => (
-                <div
-                  key={s.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '8px 12px',
-                    background: 'rgba(255,255,255,0.03)',
-                    borderRadius: 10,
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 20 }}>
-                    {i + 1}.
-                  </span>
-                  <div className="avatar avatar-sm">{s.user?.first_name?.charAt(0) || '?'}</div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600 }}>
-                      {s.user?.first_name} {s.user?.last_name}
-                    </p>
-                  </div>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    style={{ padding: '4px 8px', fontSize: 12 }}
-                    title="Talabani o'chirish"
-                    onClick={async () => {
-                      if (!confirm(`${s.user?.first_name}ni guruhdan o'chirmoqchimisiz?`)) return;
-                      await fetch(`/api/students/${s.id}`, { method: 'DELETE' });
-                      fetchStudents();
-                    }}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              ))}
+            <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid var(--border)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                    <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                      Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
+                    </th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
+                      Amallar
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((s, i) => (
+                    <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 600 }}>
+                        {s.user?.first_name} {s.user?.last_name}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{
+                            color: '#38bdf8',
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            border: '1px solid rgba(56, 189, 248, 0.2)',
+                            fontWeight: 600,
+                            padding: '6px 12px',
+                            borderRadius: 8,
+                          }}
+                          onClick={() => setTransferringStudent(s)}
+                        >
+                          ⇄ Boshqa guruhga ko'chirish
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
+        {/* Modals */}
         {showAddStudent && (
           <AddStudentModal
             groupId={group.id}
@@ -924,6 +933,157 @@ function GroupDetailModal({
             }}
           />
         )}
+
+        {transferringStudent && (
+          <TransferStudentModal
+            student={transferringStudent}
+            allGroups={allGroups}
+            currentGroupId={group.id}
+            onClose={() => setTransferringStudent(null)}
+            onSuccess={() => {
+              setTransferringStudent(null);
+              fetchStudents();
+              onRefresh();
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Transfer Student Modal (Move to another group / Academic leave / Expelled)
+// ============================================================
+function TransferStudentModal({
+  student,
+  allGroups,
+  currentGroupId,
+  onClose,
+  onSuccess,
+}: {
+  student: Student;
+  allGroups: Group[];
+  currentGroupId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const fullName = `${student.user?.first_name} ${student.user?.last_name}`.trim();
+
+  const handleTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGroupId) {
+      setErr('Iltimos, guruhni tanlang');
+      return;
+    }
+    setSaving(true);
+    setErr('');
+    try {
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_id: selectedGroupId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      onSuccess();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const academicGroups = allGroups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId);
+  const statusGroups = allGroups.filter((g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId);
+
+  return (
+    <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 480 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}
+        >
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>⇄ Talabani Ko'chirish</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <div
+          style={{
+            background: 'rgba(56, 189, 248, 0.08)',
+            border: '1px solid rgba(56, 189, 248, 0.2)',
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 16,
+          }}
+        >
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
+            👤 <b>{fullName}</b>
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            Talaba tizimdan o'chib ketmaydi, faqatgina tanlangan yangi guruhga ko'chiriladi.
+          </p>
+        </div>
+
+        <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="form-group">
+            <label className="form-label">Qaysi guruhga o'tkazilsin? *</label>
+            <select
+              className="input"
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+              style={{ fontSize: 14, fontWeight: 600 }}
+              autoFocus
+            >
+              <option value="">-- Guruhni tanlang --</option>
+              {academicGroups.length > 0 && (
+                <optgroup label="📚 O'quv Guruhlari">
+                  {academicGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} ({g.code})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+
+              {statusGroups.length > 0 && (
+                <optgroup label="──────── Maxsus Holatlar ────────">
+                  {statusGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+
+          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
+              Bekor
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 2 }}
+              disabled={saving || !selectedGroupId}
+            >
+              {saving ? "⏳ O'tkazilmoqda..." : "✓ O'tkazish"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -933,13 +1093,7 @@ function GroupDetailModal({
 // Add Group Modal with Leader Name Field
 // ============================================================
 function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [form, setForm] = useState({
-    name: '',
-    code: '',
-    faculty: '',
-    academic_year: '',
-    leader_name: '',
-  });
+  const [form, setForm] = useState({ name: '', code: '', faculty: '', academic_year: '', leader_name: '' });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
@@ -1148,9 +1302,7 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">
-                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
-              </label>
+              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"
