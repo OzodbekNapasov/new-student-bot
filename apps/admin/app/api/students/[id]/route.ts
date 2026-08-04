@@ -13,19 +13,30 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 }
 
-// PATCH /api/students/[id] — update group_id, student_card_number, etc. with Transfer Logging
+// PATCH /api/students/[id] — update group_id, student_card_number, first_name, last_name, etc.
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { group_id, student_card_number, is_active } = body;
+    const { group_id, student_card_number, is_active, first_name, last_name } = body;
 
-    // Fetch existing student record first to detect group transfer
+    // Fetch existing student record first
     const { data: existingStudent } = await supabase
       .from('students')
-      .select('*, group:groups(id, name, code), user:users(id, telegram_id, first_name, last_name, photo_url)')
+      .select(
+        '*, group:groups(id, name, code), user:users(id, telegram_id, first_name, last_name, photo_url)',
+      )
       .eq('id', id)
       .single();
+
+    // Update user table if first_name / last_name provided
+    if ((first_name !== undefined || last_name !== undefined) && existingStudent?.user?.id) {
+      const userUpdates: any = {};
+      if (first_name !== undefined) userUpdates.first_name = first_name;
+      if (last_name !== undefined) userUpdates.last_name = last_name;
+      userUpdates.updated_at = new Date().toISOString();
+      await supabase.from('users').update(userUpdates).eq('id', existingStudent.user.id);
+    }
 
     const updates: any = {};
     if (group_id !== undefined) updates.group_id = group_id;
@@ -36,21 +47,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .from('students')
       .update(updates)
       .eq('id', id)
-      .select('*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)')
+      .select(
+        '*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)',
+      )
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // If group_id changed, record transfer event log inside user's photo_url JSON field & update users.updated_at
-    if (group_id && existingStudent && existingStudent.group_id !== group_id && existingStudent.user?.id) {
+    // If group_id changed, record transfer event log inside user's photo_url JSON field
+    if (
+      group_id &&
+      existingStudent &&
+      existingStudent.group_id !== group_id &&
+      existingStudent.user?.id
+    ) {
       const { data: newGroup } = await supabase
         .from('groups')
         .select('id, name, code')
         .eq('id', group_id)
         .single();
 
-      const oldGroupName = existingStudent.group?.name || "Guruhsiz";
-      const newGroupName = newGroup?.name || "Yangi guruh";
+      const oldGroupName = existingStudent.group?.name || 'Guruhsiz';
+      const newGroupName = newGroup?.name || 'Yangi guruh';
 
       let existingLogs: any[] = [];
       try {

@@ -20,6 +20,8 @@ import {
   FileText,
   ShieldAlert,
   Inbox,
+  Edit3,
+  Clock,
 } from 'lucide-react';
 
 interface Props {
@@ -33,6 +35,7 @@ export default function GroupLeaderPanel({ user }: Props) {
   const [loading, setLoading] = useState(true);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   const fetchMyGroup = useCallback(async () => {
     setLoading(true);
@@ -326,23 +329,44 @@ export default function GroupLeaderPanel({ user }: Props) {
                       <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px', fontWeight: 600 }}>{fullName}</td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          style={{
-                            color: '#38bdf8',
-                            background: 'rgba(56, 189, 248, 0.1)',
-                            border: '1px solid rgba(56, 189, 248, 0.2)',
-                            fontWeight: 600,
-                            padding: '6px 12px',
-                            borderRadius: 8,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 6,
-                          }}
-                          onClick={() => setTransferringStudent(s)}
-                        >
-                          <ArrowRightLeft size={14} /> Boshqa guruhga ko'chirish
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            style={{
+                              color: '#fbbf24',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              border: '1px solid rgba(245, 158, 11, 0.2)',
+                              fontWeight: 600,
+                              padding: '6px 10px',
+                              borderRadius: 8,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                            onClick={() => setEditingStudent(s)}
+                            title="Talabani tahrirlash"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            style={{
+                              color: '#38bdf8',
+                              background: 'rgba(56, 189, 248, 0.1)',
+                              border: '1px solid rgba(56, 189, 248, 0.2)',
+                              fontWeight: 600,
+                              padding: '6px 12px',
+                              borderRadius: 8,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                            onClick={() => setTransferringStudent(s)}
+                          >
+                            <ArrowRightLeft size={14} /> Ko'chirish
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -365,6 +389,18 @@ export default function GroupLeaderPanel({ user }: Props) {
         />
       )}
 
+      {/* Edit Student Modal */}
+      {editingStudent && (
+        <EditStudentModal
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSuccess={() => {
+            setEditingStudent(null);
+            fetchMyGroup();
+          }}
+        />
+      )}
+
       {/* Transfer Student Modal */}
       {transferringStudent && (
         <TransferStudentModal
@@ -378,6 +414,209 @@ export default function GroupLeaderPanel({ user }: Props) {
           }}
         />
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// Edit Student Modal Component
+// ============================================================
+function EditStudentModal({
+  student,
+  onClose,
+  onSuccess,
+}: {
+  student: Student;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const currentFullName =
+    `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() ||
+    `${student.user?.first_name || ''}`;
+
+  const [fullName, setFullName] = useState(currentFullName);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const addedAtStr =
+    student.created_at || student.joined_at
+      ? new Date(student.created_at || student.joined_at!).toLocaleString('uz-UZ', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : 'Ma\'lum emas';
+
+  let transferLogs: any[] = [];
+  try {
+    if (student.user?.photo_url && student.user.photo_url.startsWith('[')) {
+      transferLogs = JSON.parse(student.user.photo_url);
+    }
+  } catch (e) {}
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      setErr('F.I.Sh kiritilishi shart');
+      return;
+    }
+    setSaving(true);
+    setErr('');
+    try {
+      const parts = fullName.trim().split(' ').filter(Boolean);
+      const lastName = parts[0] || '';
+      const firstName = parts.slice(1).join(' ') || lastName;
+
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: parts.length > 1 ? lastName : '',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Talaba ma\'lumotlarini saqlashda xatolik');
+      onSuccess();
+    } catch (e: any) {
+      setErr(e.message || 'Xatolik yuz berdi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 500 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}
+        >
+          <h2
+            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Edit3 size={20} style={{ color: '#38bdf8' }} /> Talaba Ma'lumotlarini Tahrirlash
+          </h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Info card with addition time & transfer history */}
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid var(--border)',
+            borderRadius: 14,
+            padding: 14,
+            marginBottom: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+            <Clock size={16} style={{ color: '#fbbf24' }} />
+            <span style={{ color: 'var(--text-muted)' }}>Guruhga/Tizimga qo'shilgan vaqti:</span>
+            <b style={{ color: '#fff' }}>{addedAtStr}</b>
+          </div>
+
+          <div style={{ fontSize: 13 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <ArrowRightLeft size={16} style={{ color: '#38bdf8' }} />
+              <span style={{ color: 'var(--text-muted)' }}>
+                Ko'chirilish tarixi (Qaysi guruhlardan kelgan):
+              </span>
+            </div>
+            {transferLogs.length === 0 ? (
+              <p style={{ fontSize: 12, color: '#34d399', marginLeft: 24, fontWeight: 600 }}>
+                ✓ Dastlabki qo'shilgan guruhidan beri ushbu guruhda
+              </p>
+            ) : (
+              <div
+                style={{
+                  marginLeft: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  marginTop: 4,
+                }}
+              >
+                {transferLogs.map((log: any, idx: number) => (
+                  <div key={idx} style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>
+                    • {log.from_group_name} ➔ {log.to_group_name} (
+                    {new Date(log.timestamp).toLocaleDateString('uz-UZ')})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="form-group">
+            <label className="form-label">
+              Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+            </label>
+            <input
+              className="input"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Masalan: Axmadova Zarnigor Habibullo qizi"
+              style={{ fontSize: 14, fontWeight: 600 }}
+              autoFocus
+            />
+          </div>
+
+          {err && (
+            <p
+              style={{
+                color: 'var(--accent-red)',
+                fontSize: 13,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
+              Bekor
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{
+                flex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+              }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Saqlash
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -473,7 +712,6 @@ function AddStudentModal({
           </button>
         </div>
 
-        {/* Mode Switcher Tabs */}
         <div
           style={{
             display: 'flex',

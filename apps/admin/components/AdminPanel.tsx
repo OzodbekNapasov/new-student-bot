@@ -142,6 +142,7 @@ export default function AdminPanel({ user }: { user: User }) {
     if (!confirm("Ushbu guruhni o'chirmoqchimisiz?")) return;
     try {
       await fetch(`/api/groups/${groupId}`, { method: 'DELETE' });
+      setShowGroupDetail(null);
       fetchGroups();
     } catch (e) {
       console.error(e);
@@ -336,10 +337,7 @@ export default function AdminPanel({ user }: { user: User }) {
                         <GroupCard
                           key={g.id}
                           group={g}
-                          copiedCode={copiedCode}
-                          onCopy={copyCode}
                           onViewDetail={() => setShowGroupDetail(g)}
-                          onDelete={() => deleteGroup(g.id)}
                         />
                       ))}
                     </div>
@@ -372,10 +370,7 @@ export default function AdminPanel({ user }: { user: User }) {
                         <GroupCard
                           key={g.id}
                           group={g}
-                          copiedCode={copiedCode}
-                          onCopy={copyCode}
                           onViewDetail={() => setShowGroupDetail(g)}
-                          onDelete={() => deleteGroup(g.id)}
                         />
                       ))}
                     </div>
@@ -388,7 +383,7 @@ export default function AdminPanel({ user }: { user: User }) {
 
         {tab === 'accordion' && (
           <div className="animate-in">
-            <AccordionStudentsView groups={groups} />
+            <AccordionStudentsView groups={groups} onGroupUpdated={fetchGroups} />
           </div>
         )}
 
@@ -423,6 +418,7 @@ export default function AdminPanel({ user }: { user: User }) {
           copiedCode={copiedCode}
           onCopy={copyCode}
           onClose={() => setShowGroupDetail(null)}
+          onDeleteGroup={deleteGroup}
           onGroupUpdatedSilently={handleGroupUpdatedSilently}
         />
       )}
@@ -431,7 +427,7 @@ export default function AdminPanel({ user }: { user: User }) {
 }
 
 // ============================================================
-// History & Activity Log View Component (New Additions + Group Transfers)
+// History & Activity Log View Component
 // ============================================================
 function HistoryView({ groups }: { groups: Group[] }) {
   const [allStudents, setAllStudents] = useState<any[]>([]);
@@ -455,14 +451,12 @@ function HistoryView({ groups }: { groups: Group[] }) {
     }
   }
 
-  // Extract all daily events (New student additions & Student group transfers) for selectedDate
   const dayEvents: any[] = [];
   allStudents.forEach((s) => {
     const fullName =
       `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
       `${s.user?.first_name || ''}`;
 
-    // 1. Check Student Creation Event
     if (s.created_at && s.created_at.startsWith(selectedDate)) {
       dayEvents.push({
         id: `add_${s.id}`,
@@ -479,7 +473,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
       });
     }
 
-    // 2. Check Group Transfer Events logged in user's photo_url JSON array
     try {
       if (s.user?.photo_url && s.user.photo_url.startsWith('[')) {
         const logs = JSON.parse(s.user.photo_url);
@@ -506,10 +499,8 @@ function HistoryView({ groups }: { groups: Group[] }) {
     } catch (e) {}
   });
 
-  // Sort events by timestamp descending (newest first)
   dayEvents.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
-  // Monthly stats
   const monthlyStats: Record<string, { count: number; students: any[] }> = {};
   allStudents.forEach((s) => {
     if (s.created_at) {
@@ -580,7 +571,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Date Filter & Daily Activity Log Header */}
       <div
         style={{
           display: 'flex',
@@ -628,7 +618,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
         </div>
       </div>
 
-      {/* Daily Activity Log Table */}
       <div className="card">
         <div
           style={{
@@ -762,7 +751,6 @@ function HistoryView({ groups }: { groups: Group[] }) {
         )}
       </div>
 
-      {/* Monthly Statistics Card */}
       <div className="card">
         <h3
           style={{
@@ -836,10 +824,11 @@ function HistoryView({ groups }: { groups: Group[] }) {
 // ============================================================
 // Accordion Students View
 // ============================================================
-function AccordionStudentsView({ groups }: { groups: Group[] }) {
+function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; onGroupUpdated: () => void }) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(groups[0]?.id || null);
   const [groupStudents, setGroupStudents] = useState<Record<string, Student[]>>({});
   const [loadingGroup, setLoadingGroup] = useState<Record<string, boolean>>({});
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   useEffect(() => {
     if (groups[0]?.id && !groupStudents[groups[0].id]) {
@@ -1121,6 +1110,15 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                           >
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              textAlign: 'right',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            Amal
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1139,6 +1137,22 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                               {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
                                 `${s.user?.first_name || ''}`}
                             </td>
+                            <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                              <button
+                                className="btn btn-ghost btn-sm"
+                                style={{
+                                  color: '#fbbf24',
+                                  background: 'rgba(245, 158, 11, 0.1)',
+                                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                                  padding: '4px 8px',
+                                  borderRadius: 6,
+                                }}
+                                onClick={() => setEditingStudent(s)}
+                                title="Tahrirlash"
+                              >
+                                <Edit3 size={14} />
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1150,25 +1164,31 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
           </div>
         );
       })}
+
+      {editingStudent && (
+        <EditStudentModal
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSuccess={() => {
+            setEditingStudent(null);
+            if (expandedGroupId) loadGroupStudents(expandedGroupId);
+            onGroupUpdated();
+          }}
+        />
+      )}
     </div>
   );
 }
 
 // ============================================================
-// Group Card Component
+// Group Card Component (Fully Clickable Card, No Boshqarish Button)
 // ============================================================
 function GroupCard({
   group,
-  copiedCode,
-  onCopy,
   onViewDetail,
-  onDelete,
 }: {
   group: Group;
-  copiedCode: string | null;
-  onCopy: (code: string) => void;
   onViewDetail: () => void;
-  onDelete: () => void;
 }) {
   const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
   const leaderName = group.leader
@@ -1184,7 +1204,22 @@ function GroupCard({
   return (
     <div
       className="card"
-      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+      onClick={onViewDetail}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        cursor: 'pointer',
+        transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--accent-blue)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border)';
+        e.currentTarget.style.transform = 'none';
+      }}
     >
       <div>
         <div
@@ -1240,7 +1275,6 @@ function GroupCard({
                 : '1px solid rgba(245,158,11,0.2)',
               borderRadius: 10,
               padding: '10px 14px',
-              marginBottom: 12,
             }}
           >
             <p
@@ -1262,36 +1296,15 @@ function GroupCard({
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <button
-          className="btn btn-ghost btn-sm"
-          style={{
-            flex: 1,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-          }}
-          onClick={onViewDetail}
-        >
-          <Sliders size={15} /> Boshqarish
-        </button>
-        {!isStatusGroup && (
-          <button
-            className="btn btn-danger btn-sm"
-            style={{ padding: '6px 12px' }}
-            onClick={onDelete}
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
+      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 600 }}>Boshqarish ➔</span>
       </div>
     </div>
   );
 }
 
 // ============================================================
-// Group Detail Modal
+// Group Detail Modal (Includes Delete Group Button Inside Modal)
 // ============================================================
 function GroupDetailModal({
   group: initialGroup,
@@ -1299,6 +1312,7 @@ function GroupDetailModal({
   copiedCode,
   onCopy,
   onClose,
+  onDeleteGroup,
   onGroupUpdatedSilently,
 }: {
   group: Group;
@@ -1306,6 +1320,7 @@ function GroupDetailModal({
   copiedCode: string | null;
   onCopy: (code: string) => void;
   onClose: () => void;
+  onDeleteGroup: (groupId: string) => void;
   onGroupUpdatedSilently: (updatedGroup: Group) => void;
 }) {
   const [currentGroup, setCurrentGroup] = useState<Group>(initialGroup);
@@ -1313,6 +1328,7 @@ function GroupDetailModal({
   const [loading, setLoading] = useState(true);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [regenerating, setRegenerating] = useState(false);
 
   const [groupNameInput, setGroupNameInput] = useState(initialGroup.name);
@@ -1489,9 +1505,21 @@ function GroupDetailModal({
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {currentGroup.code}</p>
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            <X size={20} />
-          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {!isStatusGroup && (
+              <button
+                className="btn btn-danger btn-sm"
+                style={{ padding: '6px 12px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => onDeleteGroup(currentGroup.id)}
+              >
+                <Trash2 size={15} /> Guruhni O'chirish
+              </button>
+            )}
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div
@@ -1716,23 +1744,43 @@ function GroupDetailModal({
                         {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          style={{
-                            color: '#38bdf8',
-                            background: 'rgba(56, 189, 248, 0.1)',
-                            border: '1px solid rgba(56, 189, 248, 0.2)',
-                            fontWeight: 600,
-                            padding: '6px 12px',
-                            borderRadius: 8,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 6,
-                          }}
-                          onClick={() => setTransferringStudent(s)}
-                        >
-                          <ArrowRightLeft size={14} /> Boshqa guruhga ko'chirish
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            style={{
+                              color: '#fbbf24',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              border: '1px solid rgba(245, 158, 11, 0.2)',
+                              fontWeight: 600,
+                              padding: '6px 10px',
+                              borderRadius: 8,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                            onClick={() => setEditingStudent(s)}
+                            title="Talabani tahrirlash"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            style={{
+                              color: '#38bdf8',
+                              background: 'rgba(56, 189, 248, 0.1)',
+                              border: '1px solid rgba(56, 189, 248, 0.2)',
+                              fontWeight: 600,
+                              padding: '6px 12px',
+                              borderRadius: 8,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                            onClick={() => setTransferringStudent(s)}
+                          >
+                            <ArrowRightLeft size={14} /> Ko'chirish
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1755,6 +1803,18 @@ function GroupDetailModal({
           />
         )}
 
+        {editingStudent && (
+          <EditStudentModal
+            student={editingStudent}
+            onClose={() => setEditingStudent(null)}
+            onSuccess={() => {
+              setEditingStudent(null);
+              fetchStudents();
+              showToast("Talaba ma'lumotlari saqlandi!");
+            }}
+          />
+        )}
+
         {transferringStudent && (
           <TransferStudentModal
             student={transferringStudent}
@@ -1768,6 +1828,209 @@ function GroupDetailModal({
             }}
           />
         )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Edit Student Modal Component
+// ============================================================
+function EditStudentModal({
+  student,
+  onClose,
+  onSuccess,
+}: {
+  student: Student;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const currentFullName =
+    `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() ||
+    `${student.user?.first_name || ''}`;
+
+  const [fullName, setFullName] = useState(currentFullName);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const addedAtStr =
+    student.created_at || student.joined_at
+      ? new Date(student.created_at || student.joined_at!).toLocaleString('uz-UZ', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : 'Ma\'lum emas';
+
+  let transferLogs: any[] = [];
+  try {
+    if (student.user?.photo_url && student.user.photo_url.startsWith('[')) {
+      transferLogs = JSON.parse(student.user.photo_url);
+    }
+  } catch (e) {}
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      setErr('F.I.Sh kiritilishi shart');
+      return;
+    }
+    setSaving(true);
+    setErr('');
+    try {
+      const parts = fullName.trim().split(' ').filter(Boolean);
+      const lastName = parts[0] || '';
+      const firstName = parts.slice(1).join(' ') || lastName;
+
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: parts.length > 1 ? lastName : '',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Talaba ma\'lumotlarini saqlashda xatolik');
+      onSuccess();
+    } catch (e: any) {
+      setErr(e.message || 'Xatolik yuz berdi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 500 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}
+        >
+          <h2
+            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Edit3 size={20} style={{ color: '#38bdf8' }} /> Talaba Ma'lumotlarini Tahrirlash
+          </h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Info card with addition time & transfer history */}
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid var(--border)',
+            borderRadius: 14,
+            padding: 14,
+            marginBottom: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+            <Clock size={16} style={{ color: '#fbbf24' }} />
+            <span style={{ color: 'var(--text-muted)' }}>Guruhga/Tizimga qo'shilgan vaqti:</span>
+            <b style={{ color: '#fff' }}>{addedAtStr}</b>
+          </div>
+
+          <div style={{ fontSize: 13 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <ArrowRightLeft size={16} style={{ color: '#38bdf8' }} />
+              <span style={{ color: 'var(--text-muted)' }}>
+                Ko'chirilish tarixi (Qaysi guruhlardan kelgan):
+              </span>
+            </div>
+            {transferLogs.length === 0 ? (
+              <p style={{ fontSize: 12, color: '#34d399', marginLeft: 24, fontWeight: 600 }}>
+                ✓ Dastlabki qo'shilgan guruhidan beri ushbu guruhda
+              </p>
+            ) : (
+              <div
+                style={{
+                  marginLeft: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  marginTop: 4,
+                }}
+              >
+                {transferLogs.map((log: any, idx: number) => (
+                  <div key={idx} style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>
+                    • {log.from_group_name} ➔ {log.to_group_name} (
+                    {new Date(log.timestamp).toLocaleDateString('uz-UZ')})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="form-group">
+            <label className="form-label">
+              Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+            </label>
+            <input
+              className="input"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Masalan: Axmadova Zarnigor Habibullo qizi"
+              style={{ fontSize: 14, fontWeight: 600 }}
+              autoFocus
+            />
+          </div>
+
+          {err && (
+            <p
+              style={{
+                color: 'var(--accent-red)',
+                fontSize: 13,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
+              Bekor
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{
+                flex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+              }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Saqlash
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
