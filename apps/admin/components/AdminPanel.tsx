@@ -46,7 +46,22 @@ import {
 } from 'lucide-react';
 
 // ============================================================
-// Helper: Export to native Excel (.xlsx) format with Gridlines & Student ID
+// Helper: Format Date to exact Excel format DD.MM.YYYY HH:mm (e.g. 04.08.2026 13:14)
+// ============================================================
+function formatDateExcel(timeVal: string | Date | undefined | null) {
+  if (!timeVal) return '—';
+  const d = new Date(timeVal);
+  if (isNaN(d.getTime())) return '—';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+// ============================================================
+// Helper: Export to native Excel (.xlsx) format with Gridlines & Permanent Student ID
 // ============================================================
 function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yxati') {
   const data = students.map((s, i) => {
@@ -59,20 +74,18 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
       'Talabaning Familiyasi, Ismi va Sharifi':
         `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
         `${s.user?.first_name || ''}`,
-      "Qo'shilgan sana va vaqt": timeVal
-        ? new Date(timeVal).toLocaleString('uz-UZ', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        : '—',
+      "Qo'shilgan sana va vaqt": formatDateExcel(timeVal),
     };
   });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  worksheet['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 22 }, { wch: 45 }, { wch: 24 }];
+  worksheet['!cols'] = [
+    { wch: 8 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 45 },
+    { wch: 22 },
+  ];
   // Force Excel to render gridlines for all cells when opened
   worksheet['!views'] = [{ showGridLines: true }];
 
@@ -84,14 +97,20 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
 function exportLogsToExcel(events: any[], title: string = 'Tarix_Log') {
   const data = events.map((e, i) => ({
     'T/R': i + 1,
-    Vaqti: e.timeStr || '—',
-    'Amal Turi': e.typeLabel || "O'zgarish",
+    Vaqti: formatDateExcel(e.timestamp),
+    'Amal Turi': e.typeLabel || 'O\'zgarish',
     'Talabaning Familiyasi, Ismi va Sharifi': e.student_name,
     Tafsilot: e.details,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  worksheet['!cols'] = [{ wch: 8 }, { wch: 12 }, { wch: 24 }, { wch: 45 }, { wch: 45 }];
+  worksheet['!cols'] = [
+    { wch: 8 },
+    { wch: 22 },
+    { wch: 24 },
+    { wch: 45 },
+    { wch: 45 },
+  ];
   // Force Excel to render gridlines for all cells when opened
   worksheet['!views'] = [{ showGridLines: true }];
 
@@ -237,41 +256,25 @@ export default function AdminPanel({ user }: { user: User }) {
             className={`tab ${tab === 'groups' ? 'active' : ''}`}
             onClick={() => setTab('groups')}
           >
-            <BookOpen
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Guruhlar
+            <BookOpen size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Guruhlar
           </button>
           <button
             className={`tab ${tab === 'accordion' ? 'active' : ''}`}
             onClick={() => setTab('accordion')}
           >
-            <Users
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Yig'ma Ro'yxat
+            <Users size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Yig'ma Ro'yxat
           </button>
           <button
             className={`tab ${tab === 'history' ? 'active' : ''}`}
             onClick={() => setTab('history')}
           >
-            <History
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Tarix va Log
+            <History size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Tarix va Log
           </button>
           <button
             className={`tab ${tab === 'stats' ? 'active' : ''}`}
             onClick={() => setTab('stats')}
           >
-            <BarChart3
-              size={16}
-              style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }}
-            />{' '}
-            Statistika
+            <BarChart3 size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Statistika
           </button>
         </div>
       </div>
@@ -295,15 +298,7 @@ export default function AdminPanel({ user }: { user: User }) {
               }}
             >
               <div>
-                <h2
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
+                <h2 style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Layers size={22} style={{ color: '#38bdf8' }} /> Guruhlar Boshqaruvi
                 </h2>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -313,12 +308,7 @@ export default function AdminPanel({ user }: { user: User }) {
 
               <button
                 className="btn btn-primary"
-                style={{
-                  padding: '10px 18px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
+                style={{ padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 onClick={() => setShowAddGroup(true)}
               >
                 <Plus size={18} /> Yangi guruh qo'shish
@@ -375,20 +365,15 @@ export default function AdminPanel({ user }: { user: User }) {
 
                 {/* 2. Special Status Groups Section */}
                 {statusGroups.length > 0 && (
-                  <div
-                    style={{ marginTop: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}
-                  >
-                    <div
-                      style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}
-                    >
+                  <div style={{ marginTop: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+                    <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Bookmark size={18} style={{ color: '#fbbf24' }} />
                       <div>
                         <h3 style={{ fontSize: 16, fontWeight: 700 }}>
                           Maxsus Status Guruhlari (Akademik & Safdan Chiqqanlar)
                         </h3>
                         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          Boshqa guruhlardan o'tkazilgan talabalar jamlanmasi (Rahbar talab
-                          qilinmaydi)
+                          Boshqa guruhlardan o'tkazilgan talabalar jamlanmasi (Rahbar talab qilinmaydi)
                         </p>
                       </div>
                     </div>
@@ -502,10 +487,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
         group_name: s.group?.name || 'Guruhsiz',
         details: `Guruhga qo'shildi: ${s.group?.name || 'Guruhsiz'}`,
         timestamp: studentCreatedAt,
-        timeStr: new Date(studentCreatedAt).toLocaleTimeString('uz-UZ', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+        timeStr: formatDateExcel(studentCreatedAt),
       });
     }
 
@@ -525,10 +507,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                 to_group_code: log.to_group_code,
                 details: `${log.from_group_name} ➔ ${log.to_group_name}`,
                 timestamp: log.timestamp,
-                timeStr: new Date(log.timestamp).toLocaleTimeString('uz-UZ', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }),
+                timeStr: formatDateExcel(log.timestamp),
               });
             }
           });
@@ -545,10 +524,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
               to_group_name: parts[1] || 'Yangi guruh',
               details: `${parts[0] || ''} ➔ ${parts[1] || ''}`,
               timestamp: userUpdatedAt,
-              timeStr: new Date(userUpdatedAt).toLocaleTimeString('uz-UZ', {
-                hour: '2-digit',
-                minute: '2-digit',
-              }),
+              timeStr: formatDateExcel(userUpdatedAt),
             });
           }
         }
@@ -697,8 +673,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                 gap: 8,
               }}
             >
-              <Clock size={18} style={{ color: '#fbbf24' }} /> {selectedDate} sanasidagi
-              o'zgarishlar ({dayEvents.length} ta)
+              <Clock size={18} style={{ color: '#fbbf24' }} /> {selectedDate} sanasidagi o'zgarishlar ({dayEvents.length} ta)
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               Ushbu kunda qo'shilgan va boshqa guruhlarga/statuslarga ko'chirilgan talabalar logi
@@ -751,7 +726,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                   <th
                     style={{
                       padding: '10px 14px',
-                      width: 90,
+                      width: 140,
                       borderBottom: '1px solid var(--border)',
                     }}
                   >
@@ -786,16 +761,19 @@ function HistoryView({ groups }: { groups: Group[] }) {
               </thead>
               <tbody>
                 {dayEvents.map((ev, idx) => (
-                  <tr
-                    key={ev.id || idx}
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                  >
-                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                    <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
+                  <tr key={ev.id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                      {idx + 1}
+                    </td>
+                    <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700, fontFamily: 'monospace' }}>
                       {ev.timeStr}
                     </td>
-                    <td style={{ padding: '10px 14px' }}>{renderEventTypeBadge(ev)}</td>
-                    <td style={{ padding: '10px 14px', fontWeight: 700 }}>{ev.student_name}</td>
+                    <td style={{ padding: '10px 14px' }}>
+                      {renderEventTypeBadge(ev)}
+                    </td>
+                    <td style={{ padding: '10px 14px', fontWeight: 700 }}>
+                      {ev.student_name}
+                    </td>
                     <td style={{ padding: '10px 14px', color: '#38bdf8', fontWeight: 600 }}>
                       {ev.details}
                     </td>
@@ -851,8 +829,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                     <Calendar size={16} /> {month}
                   </h4>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    Jami qo'shilgan talabalar:{' '}
-                    <b style={{ color: '#34d399' }}>{item.count} nafar</b>
+                    Jami qo'shilgan talabalar: <b style={{ color: '#34d399' }}>{item.count} nafar</b>
                   </p>
                 </div>
                 <button
@@ -881,13 +858,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
 // ============================================================
 // Accordion Students View (Summary list with Student ID Column)
 // ============================================================
-function AccordionStudentsView({
-  groups,
-  onGroupUpdated,
-}: {
-  groups: Group[];
-  onGroupUpdated: () => void;
-}) {
+function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; onGroupUpdated: () => void }) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(groups[0]?.id || null);
   const [groupStudents, setGroupStudents] = useState<Record<string, Student[]>>({});
   const [loadingGroup, setLoadingGroup] = useState<Record<string, boolean>>({});
@@ -1196,8 +1167,7 @@ function AccordionStudentsView({
                       <tbody>
                         {students.map((s, idx) => {
                           const studentId =
-                            s.student_card_number ||
-                            `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
+                            s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
 
                           return (
                             <tr
@@ -1222,9 +1192,7 @@ function AccordionStudentsView({
                                   {studentId}
                                 </span>
                               </td>
-                              <td
-                                style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}
-                              >
+                              <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
                                 {group.name}
                               </td>
                               <td style={{ padding: '10px 14px', fontWeight: 600 }}>
@@ -1278,7 +1246,13 @@ function AccordionStudentsView({
 // ============================================================
 // Group Card Component
 // ============================================================
-function GroupCard({ group, onViewDetail }: { group: Group; onViewDetail: () => void }) {
+function GroupCard({
+  group,
+  onViewDetail,
+}: {
+  group: Group;
+  onViewDetail: () => void;
+}) {
   const isStatusGroup = group.code === 'AKADEMIK' || group.code === 'CHIQARILGAN';
   const leaderName = group.leader
     ? `${group.leader.first_name} ${group.leader.last_name}`.trim()
@@ -1385,9 +1359,7 @@ function GroupCard({ group, onViewDetail }: { group: Group; onViewDetail: () => 
         )}
       </div>
 
-      <div
-        style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
-      >
+      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 600 }}>Boshqarish ➔</span>
       </div>
     </div>
@@ -1425,9 +1397,7 @@ function GroupDetailModal({
   const [groupNameInput, setGroupNameInput] = useState(initialGroup.name);
   const [updatingGroupName, setUpdatingGroupName] = useState(false);
   const [leaderNameInput, setLeaderNameInput] = useState(
-    initialGroup.leader
-      ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim()
-      : '',
+    initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
   );
   const [updatingLeader, setUpdatingLeader] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -1438,9 +1408,7 @@ function GroupDetailModal({
     setCurrentGroup(initialGroup);
     setGroupNameInput(initialGroup.name);
     setLeaderNameInput(
-      initialGroup.leader
-        ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim()
-        : '',
+      initialGroup.leader ? `${initialGroup.leader.first_name} ${initialGroup.leader.last_name}`.trim() : '',
     );
   }, [initialGroup]);
 
@@ -1482,10 +1450,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Guruh nomi jonli saqlandi!');
+        showToast("Guruh nomi jonli saqlandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingGroupName(false);
     }
@@ -1507,10 +1475,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Guruh rahbari jonli saqlandi!');
+        showToast("Guruh rahbari jonli saqlandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setUpdatingLeader(false);
     }
@@ -1531,10 +1499,10 @@ function GroupDetailModal({
       if (data.group) {
         setCurrentGroup(data.group);
         onGroupUpdatedSilently(data.group);
-        showToast('Login kod yangilandi!');
+        showToast("Login kod yangilandi!");
       }
     } catch (e: any) {
-      alert(e.message || 'Xatolik yuz berdi');
+      alert(e.message || "Xatolik yuz berdi");
     } finally {
       setRegenerating(false);
     }
@@ -1544,13 +1512,7 @@ function GroupDetailModal({
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
         className="modal"
-        style={{
-          width: '92%',
-          maxWidth: 860,
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          position: 'relative',
-        }}
+        style={{ width: '92%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}
       >
         {toastMsg && (
           <div
@@ -1603,9 +1565,7 @@ function GroupDetailModal({
             </div>
             <div>
               <h2 style={{ fontSize: 22, fontWeight: 800 }}>{currentGroup.name} Boshqaruvi</h2>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Guruh kodi: {currentGroup.code}
-              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {currentGroup.code}</p>
             </div>
           </div>
 
@@ -1613,13 +1573,7 @@ function GroupDetailModal({
             {!isStatusGroup && (
               <button
                 className="btn btn-danger btn-sm"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: 13,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                style={{ padding: '6px 12px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 onClick={() => onDeleteGroup(currentGroup.id)}
               >
                 <Trash2 size={15} /> Guruhni O'chirish
@@ -1650,14 +1604,7 @@ function GroupDetailModal({
           >
             <label
               className="form-label"
-              style={{
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                color: '#94a3b8',
-              }}
+              style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
             >
               <Edit3 size={15} style={{ color: '#38bdf8' }} /> GURUH NOMI (TO'LIQ O'ZGARTIRISH)
             </label>
@@ -1673,13 +1620,7 @@ function GroupDetailModal({
                 type="submit"
                 className="btn btn-primary btn-sm"
                 disabled={updatingGroupName}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 16px',
-                  borderRadius: 10,
-                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
               >
                 {updatingGroupName ? (
                   <Loader2 className="spinner-icon" size={14} />
@@ -1703,14 +1644,7 @@ function GroupDetailModal({
             >
               <label
                 className="form-label"
-                style={{
-                  marginBottom: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 12,
-                  color: '#94a3b8',
-                }}
+                style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' }}
               >
                 <UserCheck size={15} style={{ color: '#34d399' }} /> GURUH RAHBARI (F.I.SH)
               </label>
@@ -1726,13 +1660,7 @@ function GroupDetailModal({
                   type="submit"
                   className="btn btn-primary btn-sm"
                   disabled={updatingLeader}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '8px 16px',
-                    borderRadius: 10,
-                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10 }}
                 >
                   {updatingLeader ? (
                     <Loader2 className="spinner-icon" size={14} />
@@ -1763,27 +1691,12 @@ function GroupDetailModal({
                   marginBottom: 6,
                 }}
               >
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: '#fbbf24',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
-                >
+                <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Key size={13} /> LOGIN KOD
                 </p>
                 <button
                   className="btn btn-ghost btn-sm"
-                  style={{
-                    fontSize: 11,
-                    color: '#ef4444',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
+                  style={{ fontSize: 11, color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   onClick={regenerateCode}
                   disabled={regenerating}
                 >
@@ -1846,34 +1759,17 @@ function GroupDetailModal({
               marginBottom: 12,
             }}
           >
-            <h3
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <Users size={18} style={{ color: '#38bdf8' }} /> Guruh Talabalari ({students.length}{' '}
-              nafar)
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={18} style={{ color: '#38bdf8' }} /> Guruh Talabalari ({students.length} nafar)
             </h3>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => setShowAddStudent(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
+            <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <Plus size={16} /> Talaba Qo'shish
             </button>
           </div>
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 30 }}>
-              <Loader2
-                className="spinner-icon"
-                size={32}
-                style={{ margin: '0 auto', color: '#38bdf8' }}
-              />
+              <Loader2 className="spinner-icon" size={32} style={{ margin: '0 auto', color: '#38bdf8' }} />
             </div>
           ) : students.length === 0 ? (
             <div
@@ -1894,34 +1790,12 @@ function GroupDetailModal({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        width: 50,
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
-                      T/R
-                    </th>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        width: 140,
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
-                      Talaba ID
-                    </th>
+                    <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                    <th style={{ padding: '12px 16px', width: 140, borderBottom: '1px solid var(--border)' }}>Talaba ID</th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
-                    <th
-                      style={{
-                        padding: '12px 16px',
-                        textAlign: 'right',
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
+                    <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
                       Amallar
                     </th>
                   </tr>
@@ -1933,9 +1807,7 @@ function GroupDetailModal({
 
                     return (
                       <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
-                          {i + 1}
-                        </td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span
                             style={{
@@ -1952,8 +1824,7 @@ function GroupDetailModal({
                           </span>
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                          {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-                            `${s.user?.first_name || ''}`}
+                          {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: 6 }}>
@@ -2066,19 +1937,10 @@ function EditStudentModal({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
-  const studentId =
-    student.student_card_number || `STU-${(student.id || '').slice(0, 8).toUpperCase()}`;
+  const studentId = student.student_card_number || `STU-${(student.id || '').slice(0, 8).toUpperCase()}`;
 
   const addedAt = student.joined_at || student.created_at || student.user?.created_at;
-  const addedAtStr = addedAt
-    ? new Date(addedAt).toLocaleString('uz-UZ', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : "Ma'lum emas";
+  const addedAtStr = formatDateExcel(addedAt);
 
   let transferLogs: any[] = [];
   try {
@@ -2109,7 +1971,7 @@ function EditStudentModal({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Talaba ma'lumotlarini saqlashda xatolik");
+      if (!res.ok) throw new Error(data.error || 'Talaba ma\'lumotlarini saqlashda xatolik');
       onSuccess();
     } catch (e: any) {
       setErr(e.message || 'Xatolik yuz berdi');
@@ -2154,14 +2016,14 @@ function EditStudentModal({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
             <Hash size={16} style={{ color: '#38bdf8' }} />
-            <span style={{ color: 'var(--text-muted)' }}>Talaba Unikal ID:</span>
+            <span style={{ color: 'var(--text-muted)' }}>Talaba Doimiy ID:</span>
             <b style={{ color: '#38bdf8', fontFamily: 'monospace', fontSize: 14 }}>{studentId}</b>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
             <Clock size={16} style={{ color: '#fbbf24' }} />
             <span style={{ color: 'var(--text-muted)' }}>Guruhga/Tizimga qo'shilgan vaqti:</span>
-            <b style={{ color: '#fff' }}>{addedAtStr}</b>
+            <b style={{ color: '#fff', fontFamily: 'monospace' }}>{addedAtStr}</b>
           </div>
 
           <div style={{ fontSize: 13 }}>
@@ -2188,7 +2050,7 @@ function EditStudentModal({
                 {transferLogs.map((log: any, idx: number) => (
                   <div key={idx} style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>
                     • {log.from_group_name} ➔ {log.to_group_name} (
-                    {new Date(log.timestamp).toLocaleDateString('uz-UZ')})
+                    {formatDateExcel(log.timestamp)})
                   </div>
                 ))}
               </div>
@@ -2198,7 +2060,9 @@ function EditStudentModal({
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="form-group">
-            <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+            <label className="form-label">
+              Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+            </label>
             <input
               className="input"
               value={fullName}
@@ -2298,7 +2162,7 @@ function TransferStudentModal({
       if (!res.ok) throw new Error(data.error || "Talabani ko'chirishda xatolik");
       onSuccess();
     } catch (e: any) {
-      setErr(e.message || 'Xatolik yuz berdi');
+      setErr(e.message || "Xatolik yuz berdi");
     } finally {
       setSaving(false);
     }
@@ -2322,9 +2186,7 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <ArrowRightLeft size={20} style={{ color: '#38bdf8' }} /> Talabani Ko'chirish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2341,16 +2203,7 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <p
-            style={{
-              fontSize: 13,
-              color: '#38bdf8',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
             <UserIcon size={16} /> <b>{fullName}</b>
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
@@ -2416,15 +2269,7 @@ function TransferStudentModal({
           </div>
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2436,13 +2281,7 @@ function TransferStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving || !selectedGroupId}
             >
               {saving ? (
@@ -2511,9 +2350,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             marginBottom: 20,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <BookOpen size={20} style={{ color: '#38bdf8' }} /> Yangi Guruh
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2552,15 +2389,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
           </div>
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2571,13 +2400,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving}
             >
               {saving ? (
@@ -2678,9 +2501,7 @@ function AddStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2
-            style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
             <UserPlus size={20} style={{ color: '#38bdf8' }} /> Talaba Qo'shish
           </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
@@ -2701,15 +2522,7 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('single')}
           >
             <UserIcon size={15} /> Bittalab
@@ -2717,15 +2530,7 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('bulk')}
           >
             <ListPlus size={15} /> Ro'yxat bo'yicha
@@ -2765,15 +2570,7 @@ function AddStudentModal({
           )}
 
           {err && (
-            <p
-              style={{
-                color: 'var(--accent-red)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <AlertTriangle size={16} /> {err}
             </p>
           )}
@@ -2785,13 +2582,7 @@ function AddStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving}
             >
               {saving ? (
@@ -2851,7 +2642,10 @@ function StatsView({ groups }: { groups: Group[] }) {
     (sum, g) => sum + getGroupStudentCount(g.id),
     0,
   );
-  const statusStudentsCount = statusGroups.reduce((sum, g) => sum + getGroupStudentCount(g.id), 0);
+  const statusStudentsCount = statusGroups.reduce(
+    (sum, g) => sum + getGroupStudentCount(g.id),
+    0,
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -2893,9 +2687,7 @@ function StatsView({ groups }: { groups: Group[] }) {
       {/* Overview Stat Cards */}
       <div className="grid-3">
         <div className="stat-card" style={{ borderLeft: '4px solid #38bdf8' }}>
-          <div
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <span className="stat-value" style={{ color: '#38bdf8' }}>
                 {totalStudents}
@@ -2907,9 +2699,7 @@ function StatsView({ groups }: { groups: Group[] }) {
         </div>
 
         <div className="stat-card" style={{ borderLeft: '4px solid #34d399' }}>
-          <div
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <span className="stat-value" style={{ color: '#34d399' }}>
                 {academicStudentsCount}
@@ -2921,9 +2711,7 @@ function StatsView({ groups }: { groups: Group[] }) {
         </div>
 
         <div className="stat-card" style={{ borderLeft: '4px solid #fbbf24' }}>
-          <div
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <span className="stat-value" style={{ color: '#fbbf24' }}>
                 {statusStudentsCount}
@@ -2937,11 +2725,7 @@ function StatsView({ groups }: { groups: Group[] }) {
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: 40 }}>
-          <Loader2
-            className="spinner-icon"
-            size={36}
-            style={{ color: '#38bdf8', margin: '0 auto' }}
-          />
+          <Loader2 className="spinner-icon" size={36} style={{ color: '#38bdf8', margin: '0 auto' }} />
         </div>
       ) : (
         <>
@@ -3010,9 +2794,7 @@ function StatsView({ groups }: { groups: Group[] }) {
             </div>
 
             {openAcademic && (
-              <div
-                style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}
-              >
+              <div style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
                 {academicGroups.length === 0 ? (
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
                     O'quv guruhlari mavjud emas.
@@ -3070,14 +2852,7 @@ function StatsView({ groups }: { groups: Group[] }) {
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <b style={{ fontSize: 15, color: '#38bdf8' }}>{count} nafar talaba</b>
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  color: 'var(--text-muted)',
-                                  width: 45,
-                                  textAlign: 'right',
-                                }}
-                              >
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 45, textAlign: 'right' }}>
                                 ({percent}%)
                               </span>
                             </div>
@@ -3177,9 +2952,7 @@ function StatsView({ groups }: { groups: Group[] }) {
             </div>
 
             {openStatus && (
-              <div
-                style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}
-              >
+              <div style={{ padding: 20, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
                 {statusGroups.length === 0 ? (
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
                     Maxsus status guruhlari mavjud emas.
@@ -3236,19 +3009,10 @@ function StatsView({ groups }: { groups: Group[] }) {
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <b
-                                style={{ fontSize: 15, color: isAkademik ? '#fbbf24' : '#ef4444' }}
-                              >
+                              <b style={{ fontSize: 15, color: isAkademik ? '#fbbf24' : '#ef4444' }}>
                                 {count} nafar talaba
                               </b>
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  color: 'var(--text-muted)',
-                                  width: 45,
-                                  textAlign: 'right',
-                                }}
-                              >
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 45, textAlign: 'right' }}>
                                 ({percent}%)
                               </span>
                             </div>

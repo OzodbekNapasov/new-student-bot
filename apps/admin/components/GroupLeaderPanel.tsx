@@ -28,6 +28,18 @@ interface Props {
   user: User;
 }
 
+function formatDateExcel(timeVal: string | Date | undefined | null) {
+  if (!timeVal) return '—';
+  const d = new Date(timeVal);
+  if (isNaN(d.getTime())) return '—';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
 export default function GroupLeaderPanel({ user }: Props) {
   const [myGroup, setMyGroup] = useState<Group | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
@@ -438,16 +450,8 @@ function EditStudentModal({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
-  const addedAtStr =
-    student.created_at || student.joined_at
-      ? new Date(student.created_at || student.joined_at!).toLocaleString('uz-UZ', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : "Ma'lum emas";
+  const addedAt = student.joined_at || student.created_at || student.user?.created_at;
+  const addedAtStr = formatDateExcel(addedAt);
 
   let transferLogs: any[] = [];
   try {
@@ -551,7 +555,7 @@ function EditStudentModal({
                 {transferLogs.map((log: any, idx: number) => (
                   <div key={idx} style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>
                     • {log.from_group_name} ➔ {log.to_group_name} (
-                    {new Date(log.timestamp).toLocaleDateString('uz-UZ')})
+                    {formatDateExcel(log.timestamp)})
                   </div>
                 ))}
               </div>

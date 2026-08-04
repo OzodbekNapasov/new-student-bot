@@ -65,14 +65,20 @@ function getRoleKeyboard(role: string) {
   if (role === 'SUPER_ADMIN') {
     return Markup.keyboard([
       [Markup.button.text("📚 Guruhlar ro'yxati"), Markup.button.text('👥 Barcha talabalar')],
-      [Markup.button.text('👤 Profil & Kirish Kodu'), Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl)],
+      [
+        Markup.button.text('👤 Profil & Kirish Kodu'),
+        Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl),
+      ],
       [Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
   if (role === 'GROUP_LEADER') {
     return Markup.keyboard([
       [Markup.button.text("👥 Talabalar ro'yxati"), Markup.button.text("＋ Talaba qo'shish")],
-      [Markup.button.text('👤 Profil & Login Kodi'), Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl)],
+      [
+        Markup.button.text('👤 Profil & Login Kodi'),
+        Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl),
+      ],
       [Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
@@ -579,8 +585,7 @@ bot.on('text', async (ctx) => {
   } else {
     await setState(telegramId, 'WAITING_LOGIN_CODE');
     await ctx.reply(
-      `🆔 *Sizning Telegram ID-ingiz:* \`${telegramId}\`\n\n` +
-        `🔑 Login kodingizni yuboring:`,
+      `🆔 *Sizning Telegram ID-ingiz:* \`${telegramId}\`\n\n` + `🔑 Login kodingizni yuboring:`,
       getRoleKeyboard('STUDENT'),
     );
   }
