@@ -99,10 +99,12 @@ async function sendGroupStudentsList(ctx: any, groupId: string, groupName: strin
     return nameA.localeCompare(nameB, 'uz');
   });
 
-  let message = `📚 *${groupName}* guruhi talabalari (Familiya Ism Sharif bo'yicha alifbo tartibida):\n\n`;
+  let message = `📚 *${groupName}* guruhi talabalari:\n\n`;
   sorted.forEach((s, idx) => {
-    const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
-    message += `${idx + 1}. 👤 *${fullName}*\n`;
+    const fullName =
+      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+      `${s.user?.first_name || ''}`;
+    message += `${idx + 1}. *${fullName}*\n`;
   });
 
   message += `\n👥 *Jami:* ${sorted.length} nafar talaba`;
@@ -321,10 +323,12 @@ bot.hears('👥 Barcha talabalar', async (ctx) => {
     return nameA.localeCompare(nameB, 'uz');
   });
 
-  let text = `👥 *Barcha Talabalar Ro'yxati (Familiya Ism Sharif bo'yicha alifbo tartibida):*\n\n`;
+  let text = `👥 *Barcha Talabalar Ro'yxati:*\n\n`;
   sorted.forEach((s, idx) => {
-    const name = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
-    text += `${idx + 1}. 👤 *${name}* — ${s.group?.name || 'Guruhsiz'}\n`;
+    const name =
+      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+      `${s.user?.first_name || ''}`;
+    text += `${idx + 1}. *${name}* — ${s.group?.name || 'Guruhsiz'}\n`;
   });
 
   text += `\n👥 *Jami:* ${sorted.length} nafar talaba`;

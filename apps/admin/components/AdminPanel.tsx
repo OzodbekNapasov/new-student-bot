@@ -537,7 +537,8 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                               {group.name}
                             </td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
+                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                                `${s.user?.first_name || ''}`}
                             </td>
                           </tr>
                         ))}
@@ -986,7 +987,8 @@ function GroupDetailModal({
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                       <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
+                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                          `${s.user?.first_name || ''}`}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <button
@@ -1062,7 +1064,9 @@ function TransferStudentModal({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
-  const fullName = `${student.user?.first_name} ${student.user?.last_name}`.trim();
+  const fullName =
+    `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() ||
+    `${student.user?.first_name || ''}`;
 
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1139,14 +1143,24 @@ function TransferStudentModal({
               className="input"
               value={selectedGroupId}
               onChange={(e) => setSelectedGroupId(e.target.value)}
-              style={{ fontSize: 14, fontWeight: 600 }}
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                backgroundColor: '#1e293b',
+                color: '#ffffff',
+              }}
               autoFocus
             >
-              <option value="">-- Guruhni tanlang --</option>
+              <option value="" style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                -- Guruhni tanlang --
+              </option>
               {academicGroups.length > 0 && (
-                <optgroup label="📚 O'quv Guruhlari">
+                <optgroup
+                  label="📚 O'quv Guruhlari"
+                  style={{ backgroundColor: '#0f172a', color: '#38bdf8', fontWeight: 'bold' }}
+                >
                   {academicGroups.map((g) => (
-                    <option key={g.id} value={g.id}>
+                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
                       {g.name} ({g.code})
                     </option>
                   ))}
@@ -1154,9 +1168,12 @@ function TransferStudentModal({
               )}
 
               {statusGroups.length > 0 && (
-                <optgroup label="──────── Maxsus Holatlar ────────">
+                <optgroup
+                  label="──────── Maxsus Holatlar ────────"
+                  style={{ backgroundColor: '#0f172a', color: '#f43f5e', fontWeight: 'bold' }}
+                >
                   {statusGroups.map((g) => (
-                    <option key={g.id} value={g.id}>
+                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
                       {g.name}
                     </option>
                   ))}

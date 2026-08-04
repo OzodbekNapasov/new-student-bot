@@ -174,7 +174,9 @@ export default function GroupLeaderPanel({ user }: Props) {
           }}
         >
           <div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>GURUH TALABALARI</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+              GURUH TALABALARI
+            </p>
             <h2 style={{ fontSize: 24, fontWeight: 900, color: '#34d399', marginTop: 2 }}>
               {students.length} nafar
             </h2>
@@ -200,7 +202,8 @@ export default function GroupLeaderPanel({ user }: Props) {
           }}
         >
           <h3 style={{ fontSize: 17, fontWeight: 700 }}>
-            👥 Guruh Talabalari Ro'yxati <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>(Familiya Ism Sharif)</span>
+            👥 Guruh Talabalari Ro'yxati{' '}
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>(Familiya Ism Sharif)</span>
           </h3>
           <button className="btn btn-ghost btn-sm" onClick={fetchMyGroup}>
             🔄 Yangilash
@@ -220,32 +223,48 @@ export default function GroupLeaderPanel({ user }: Props) {
           >
             <div style={{ fontSize: 48, marginBottom: 12 }}>👤</div>
             <p style={{ fontWeight: 600, marginBottom: 6 }}>Guruhda talabalar yo'q</p>
-            <p style={{ fontSize: 13 }}>Yuqoridagi "＋ Talaba Qo'shish" tugmasi orqali talaba qo'shing.</p>
+            <p style={{ fontSize: 13 }}>
+              Yuqoridagi "＋ Talaba Qo'shish" tugmasi orqali talaba qo'shing.
+            </p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid var(--border)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                  <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      width: 50,
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
+                    T/R
+                  </th>
                   <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                     Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                   </th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border)' }}>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      borderBottom: '1px solid var(--border)',
+                    }}
+                  >
                     Amallar
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((s, i) => {
-                  const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
+                  const fullName =
+                    `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                    `${s.user?.first_name || ''}`;
 
                   return (
                     <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                       <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
-                      <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                        {fullName}
-                      </td>
+                      <td style={{ padding: '12px 16px', fontWeight: 600 }}>{fullName}</td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <button
                           className="btn btn-ghost btn-sm"
@@ -419,7 +438,9 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <label className="form-label">
+                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+              </label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"
@@ -482,7 +503,9 @@ function TransferStudentModal({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
-  const fullName = `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() || `${student.user?.first_name || ''}`;
+  const fullName =
+    `${student.user?.last_name || ''} ${student.user?.first_name || ''}`.trim() ||
+    `${student.user?.first_name || ''}`;
 
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -508,8 +531,12 @@ function TransferStudentModal({
     }
   };
 
-  const academicGroups = allGroups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId);
-  const statusGroups = allGroups.filter((g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId);
+  const academicGroups = allGroups.filter(
+    (g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN' && g.id !== currentGroupId,
+  );
+  const statusGroups = allGroups.filter(
+    (g) => (g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN') && g.id !== currentGroupId,
+  );
 
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -545,21 +572,34 @@ function TransferStudentModal({
           </p>
         </div>
 
-        <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form
+          onSubmit={handleTransfer}
+          style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+        >
           <div className="form-group">
             <label className="form-label">Qaysi guruhga o'tkazilsin? *</label>
             <select
               className="input"
               value={selectedGroupId}
               onChange={(e) => setSelectedGroupId(e.target.value)}
-              style={{ fontSize: 14, fontWeight: 600 }}
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                backgroundColor: '#1e293b',
+                color: '#ffffff',
+              }}
               autoFocus
             >
-              <option value="">-- Guruhni tanlang --</option>
+              <option value="" style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                -- Guruhni tanlang --
+              </option>
               {academicGroups.length > 0 && (
-                <optgroup label="📚 O'quv Guruhlari">
+                <optgroup
+                  label="📚 O'quv Guruhlari"
+                  style={{ backgroundColor: '#0f172a', color: '#38bdf8', fontWeight: 'bold' }}
+                >
                   {academicGroups.map((g) => (
-                    <option key={g.id} value={g.id}>
+                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
                       {g.name} ({g.code})
                     </option>
                   ))}
@@ -567,9 +607,12 @@ function TransferStudentModal({
               )}
 
               {statusGroups.length > 0 && (
-                <optgroup label="──────── Maxsus Holatlar ────────">
+                <optgroup
+                  label="──────── Maxsus Holatlar ────────"
+                  style={{ backgroundColor: '#0f172a', color: '#f43f5e', fontWeight: 'bold' }}
+                >
                   {statusGroups.map((g) => (
-                    <option key={g.id} value={g.id}>
+                    <option key={g.id} value={g.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
                       {g.name}
                     </option>
                   ))}

@@ -34,17 +34,18 @@ export async function POST(req: Request) {
     const { telegram_id, group_id, first_name, last_name, username, student_card_number } = body;
 
     if (!group_id || (!first_name && !last_name)) {
-      return NextResponse.json({ error: 'Talaba ismi va group_id kiritilishi shart' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Talaba ismi va group_id kiritilishi shart' },
+        { status: 400 },
+      );
     }
 
-    const tgId = telegram_id ? String(telegram_id) : `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const tgId = telegram_id
+      ? String(telegram_id)
+      : `STU_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     // Find or create user
-    let { data: user } = await supabase
-      .from('users')
-      .select('*')
-      .eq('telegram_id', tgId)
-      .single();
+    let { data: user } = await supabase.from('users').select('*').eq('telegram_id', tgId).single();
 
     if (!user) {
       const { data: newUser, error: createErr } = await supabase

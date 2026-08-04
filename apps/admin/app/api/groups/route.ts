@@ -11,15 +11,11 @@ function generateLoginCode(): string {
   return code;
 }
 
-// GET /api/groups (Auto-ensures special status groups exist)
+// GET /api/groups — Always sorted alphabetically, special status groups at the bottom
 export async function GET() {
   try {
     // Ensure "Akademik ta'til olganlar" group exists
-    const { data: akademikGroup } = await supabase
-      .from('groups')
-      .select('id')
-      .eq('code', 'AKADEMIK')
-      .single();
+    const { data: akademikGroup } = await supabase.from('groups').select('id').eq('code', 'AKADEMIK').single();
     if (!akademikGroup) {
       await supabase.from('groups').insert({
         name: "🎓 Akademik ta'til olganlar",
@@ -31,11 +27,7 @@ export async function GET() {
     }
 
     // Ensure "Talabalar safidan chiqarilganlar" group exists
-    const { data: chiqarilganGroup } = await supabase
-      .from('groups')
-      .select('id')
-      .eq('code', 'CHIQARILGAN')
-      .single();
+    const { data: chiqarilganGroup } = await supabase.from('groups').select('id').eq('code', 'CHIQARILGAN').single();
     if (!chiqarilganGroup) {
       await supabase.from('groups').insert({
         name: '🛑 Talabalar safidan chiqarilganlar',
@@ -51,11 +43,22 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('groups')
-    .select('*, leader:users!groups_leader_id_fkey(id, telegram_id, first_name, last_name)')
-    .order('created_at', { ascending: false });
+    .select('*, leader:users!groups_leader_id_fkey(id, telegram_id, first_name, last_name)');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ groups: data });
+
+  const allGroups = data || [];
+  const regularGroups = allGroups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN');
+  const statusGroups = allGroups.filter((g) => g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN');
+
+  // Sort regular groups alphabetically by name
+  regularGroups.sort((a, b) => a.name.localeCompare(b.name, 'uz', { numeric: true }));
+  // Sort status groups alphabetically (Akademik first, then Safidan chiqarilganlar)
+  statusGroups.sort((a, b) => a.name.localeCompare(b.name, 'uz'));
+
+  const sortedGroups = [...regularGroups, ...statusGroups];
+
+  return NextResponse.json({ groups: sortedGroups });
 }
 
 // POST /api/groups — create group with auto-generated login code & optional leader_name
