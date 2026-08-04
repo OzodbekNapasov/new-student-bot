@@ -13,12 +13,19 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 }
 
-// PATCH /api/students/[id] — update group_id, student_card_number, etc.
+// PATCH /api/students/[id] — update group_id, student_card_number, etc. with Transfer Logging
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
     const { group_id, student_card_number, is_active } = body;
+
+    // Fetch existing student record first to detect group transfer
+    const { data: existingStudent } = await supabase
+      .from('students')
+      .select('*, group:groups(id, name, code), user:users(id, telegram_id, first_name, last_name, photo_url)')
+      .eq('id', id)
+      .single();
 
     const updates: any = {};
     if (group_id !== undefined) updates.group_id = group_id;
@@ -29,10 +36,51 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .from('students')
       .update(updates)
       .eq('id', id)
-      .select('*, user:users(id, telegram_id, first_name, last_name), group:groups(id, name, code)')
+      .select('*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // If group_id changed, record transfer event log inside user's photo_url JSON field & update users.updated_at
+    if (group_id && existingStudent && existingStudent.group_id !== group_id && existingStudent.user?.id) {
+      const { data: newGroup } = await supabase
+        .from('groups')
+        .select('id, name, code')
+        .eq('id', group_id)
+        .single();
+
+      const oldGroupName = existingStudent.group?.name || "Guruhsiz";
+      const newGroupName = newGroup?.name || "Yangi guruh";
+
+      let existingLogs: any[] = [];
+      try {
+        if (existingStudent.user.photo_url && existingStudent.user.photo_url.startsWith('[')) {
+          existingLogs = JSON.parse(existingStudent.user.photo_url);
+        }
+      } catch (e) {
+        existingLogs = [];
+      }
+
+      const newLog = {
+        id: `log_${Date.now()}`,
+        type: 'TRANSFER',
+        from_group_name: oldGroupName,
+        to_group_name: newGroupName,
+        to_group_code: newGroup?.code || '',
+        timestamp: new Date().toISOString(),
+      };
+
+      existingLogs.unshift(newLog);
+
+      await supabase
+        .from('users')
+        .update({
+          photo_url: JSON.stringify(existingLogs),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingStudent.user.id);
+    }
+
     return NextResponse.json({ student: data });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
