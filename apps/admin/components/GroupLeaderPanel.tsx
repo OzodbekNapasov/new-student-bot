@@ -495,32 +495,56 @@ function AddStudentModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [form, setForm] = useState({
-    telegram_id: '',
-    first_name: '',
-    last_name: '',
-    username: '',
-    student_card_number: '',
-  });
+  const [mode, setMode] = useState<'single' | 'bulk'>('single');
+  const [fullName, setFullName] = useState('');
+  const [bulkText, setBulkText] = useState('');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.first_name && !form.last_name) {
-      setErr('Talabaning Ismi yoki Familiyasi kiritilishi shart');
-      return;
-    }
     setSaving(true);
     setErr('');
     try {
-      const res = await fetch('/api/students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, group_id: groupId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (mode === 'single') {
+        if (!fullName.trim()) {
+          setErr('Talabaning F.I.Sh kiritilishi shart');
+          setSaving(false);
+          return;
+        }
+        const parts = fullName.trim().split(' ').filter(Boolean);
+        const lastName = parts[0] || '';
+        const firstName = parts.slice(1).join(' ') || lastName;
+
+        const res = await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: parts.length > 1 ? lastName : '',
+            group_id: groupId,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      } else {
+        const lines = bulkText
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean);
+        if (lines.length === 0) {
+          setErr('Kamida bitta talaba F.I.Sh kiriting');
+          setSaving(false);
+          return;
+        }
+        const res = await fetch('/api/students/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ group_id: groupId, names: lines }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      }
       onSuccess();
     } catch (e: any) {
       setErr(e.message);
@@ -531,13 +555,13 @@ function AddStudentModal({
 
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
+      <div className="modal" style={{ maxWidth: 460 }}>
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 20,
+            marginBottom: 16,
           }}
         >
           <h2 style={{ fontSize: 18, fontWeight: 700 }}>👤 Talaba Qo'shish</h2>
@@ -545,42 +569,74 @@ function AddStudentModal({
             ✕
           </button>
         </div>
+
+        {/* Mode Switcher Tabs */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 6,
+            background: 'rgba(255,255,255,0.05)',
+            padding: 4,
+            borderRadius: 12,
+            marginBottom: 20,
+          }}
+        >
+          <button
+            type="button"
+            className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            onClick={() => setMode('single')}
+          >
+            👤 Bittalab
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            onClick={() => setMode('bulk')}
+          >
+            📋 Ro'yxat bo'yicha (Ko'plab)
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="form-group">
-            <label className="form-label">Familiyasi *</label>
-            <input
-              className="input"
-              placeholder="Masalan: Toshmatov"
-              value={form.last_name}
-              onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-              autoFocus
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Ismi va Sharifi *</label>
-            <input
-              className="input"
-              placeholder="Masalan: Jasur Alisherovich"
-              value={form.first_name}
-              onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Talaba guvohnomasi raqami (ixtiyoriy)</label>
-            <input
-              className="input"
-              placeholder="Masalan: TG-2023-001"
-              value={form.student_card_number}
-              onChange={(e) => setForm({ ...form, student_card_number: e.target.value })}
-            />
-          </div>
+          {mode === 'single' ? (
+            <div className="form-group">
+              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <input
+                className="input"
+                placeholder="Masalan: Toshmatov Jasur Alisherovich"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                autoFocus
+              />
+            </div>
+          ) : (
+            <div className="form-group">
+              <label className="form-label">Talabalar Ro'yxati (Har bir satrga bittadan) *</label>
+              <textarea
+                className="input"
+                rows={6}
+                placeholder={`Toshmatov Jasur Alisherovich\nAliyev Aziz Botirovich\nKarimov Olim Valiyevich`}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: 13, lineHeight: 1.5 }}
+                autoFocus
+              />
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                💡 Har bir qatorga yangi talabaning Familiya va Ismini yozing.
+              </p>
+            </div>
+          )}
+
           {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
-          <div style={{ display: 'flex', gap: 10 }}>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
               Bekor
             </button>
             <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={saving}>
-              {saving ? '⏳...' : "✓ Qo'shish"}
+              {saving ? '⏳ Saqlanmoqda...' : "✓ Qo'shish"}
             </button>
           </div>
         </form>

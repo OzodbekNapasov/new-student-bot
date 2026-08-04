@@ -22,11 +22,11 @@ export async function GET() {
   return NextResponse.json({ groups: data });
 }
 
-// POST /api/groups — create group with auto-generated login code
+// POST /api/groups — create group with auto-generated login code & optional leader_name
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, code, faculty, academic_year } = body;
+    const { name, code, faculty, academic_year, leader_name } = body;
 
     if (!name || !code) {
       return NextResponse.json({ error: 'name and code are required' }, { status: 400 });
@@ -34,7 +34,6 @@ export async function POST(req: Request) {
 
     // Generate unique login code
     let loginCode = generateLoginCode();
-    // Ensure uniqueness
     let attempt = 0;
     while (attempt < 10) {
       const { data: existing } = await supabase
@@ -47,6 +46,32 @@ export async function POST(req: Request) {
       attempt++;
     }
 
+    let leaderId = null;
+
+    // If leader_name provided, create a leader user record
+    if (leader_name && String(leader_name).trim()) {
+      const cleanLeaderName = String(leader_name).trim();
+      const parts = cleanLeaderName.split(' ').filter(Boolean);
+      const lastName = parts[0] || '';
+      const firstName = parts.slice(1).join(' ') || lastName;
+
+      const autoTgId = `LEADER_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+      const { data: leaderUser } = await supabase
+        .from('users')
+        .insert({
+          telegram_id: autoTgId,
+          first_name: firstName,
+          last_name: parts.length > 1 ? lastName : '',
+          role: 'GROUP_LEADER',
+        })
+        .select('*')
+        .single();
+
+      if (leaderUser) {
+        leaderId = leaderUser.id;
+      }
+    }
+
     const { data, error } = await supabase
       .from('groups')
       .insert({
@@ -55,8 +80,9 @@ export async function POST(req: Request) {
         faculty: faculty || '',
         academic_year: academic_year || '',
         login_code: loginCode,
+        leader_id: leaderId,
       })
-      .select('*')
+      .select('*, leader:users!groups_leader_id_fkey(id, telegram_id, first_name, last_name)')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
