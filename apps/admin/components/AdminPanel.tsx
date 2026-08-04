@@ -70,7 +70,14 @@ export default function AdminPanel({ user }: Props) {
             background: 'rgba(59,130,246,0.1)',
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'relative',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               className="avatar avatar-lg"

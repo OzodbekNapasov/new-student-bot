@@ -14,9 +14,17 @@ export async function GET(req: Request) {
 
   if (groupId) query = query.eq('group_id', groupId);
 
-  const { data, error } = await query.order('joined_at', { ascending: false });
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ students: data });
+
+  // Always sort alphabetically by student first_name & last_name
+  const sorted = (data || []).sort((a: any, b: any) => {
+    const nameA = `${a.user?.first_name || ''} ${a.user?.last_name || ''}`.trim().toLowerCase();
+    const nameB = `${b.user?.first_name || ''} ${b.user?.last_name || ''}`.trim().toLowerCase();
+    return nameA.localeCompare(nameB, 'uz');
+  });
+
+  return NextResponse.json({ students: sorted });
 }
 
 // POST /api/students — add student to group

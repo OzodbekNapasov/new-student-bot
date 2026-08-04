@@ -181,7 +181,14 @@ export default function GroupLeaderPanel({ user }: Props) {
             background: 'rgba(16,185,129,0.1)',
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'relative',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               className="avatar avatar-lg"
