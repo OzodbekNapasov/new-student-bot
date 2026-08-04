@@ -47,22 +47,25 @@ import {
 // Helper: Export to native Excel (.xlsx) format using SheetJS
 // ============================================================
 function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yxati') {
-  const data = students.map((s, i) => ({
-    'T/R': i + 1,
-    Guruhi: s.group?.name || s.group_name || 'Guruhsiz',
-    'Talabaning Familiyasi, Ismi va Sharifi':
-      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-      `${s.user?.first_name || ''}`,
-    "Qo'shilgan sana va vaqt": s.created_at
-      ? new Date(s.created_at).toLocaleString('uz-UZ', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—',
-  }));
+  const data = students.map((s, i) => {
+    const timeVal = s.joined_at || s.created_at || s.user?.created_at;
+    return {
+      'T/R': i + 1,
+      Guruhi: s.group?.name || s.group_name || 'Guruhsiz',
+      'Talabaning Familiyasi, Ismi va Sharifi':
+        `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+        `${s.user?.first_name || ''}`,
+      "Qo'shilgan sana va vaqt": timeVal
+        ? new Date(timeVal).toLocaleString('uz-UZ', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : '—',
+    };
+  });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   worksheet['!cols'] = [
@@ -457,7 +460,9 @@ function HistoryView({ groups }: { groups: Group[] }) {
       `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
       `${s.user?.first_name || ''}`;
 
-    if (s.created_at && s.created_at.startsWith(selectedDate)) {
+    const studentCreatedAt = s.joined_at || s.created_at || s.user?.created_at;
+
+    if (studentCreatedAt && studentCreatedAt.startsWith(selectedDate)) {
       dayEvents.push({
         id: `add_${s.id}`,
         type: 'ADD',
@@ -465,8 +470,8 @@ function HistoryView({ groups }: { groups: Group[] }) {
         student_name: fullName,
         group_name: s.group?.name || 'Guruhsiz',
         details: `Guruhga qo'shildi: ${s.group?.name || 'Guruhsiz'}`,
-        timestamp: s.created_at,
-        timeStr: new Date(s.created_at).toLocaleTimeString('uz-UZ', {
+        timestamp: studentCreatedAt,
+        timeStr: new Date(studentCreatedAt).toLocaleTimeString('uz-UZ', {
           hour: '2-digit',
           minute: '2-digit',
         }),
@@ -474,27 +479,48 @@ function HistoryView({ groups }: { groups: Group[] }) {
     }
 
     try {
-      if (s.user?.photo_url && s.user.photo_url.startsWith('[')) {
-        const logs = JSON.parse(s.user.photo_url);
-        logs.forEach((log: any) => {
-          if (log.timestamp && log.timestamp.startsWith(selectedDate)) {
+      if (s.user?.photo_url) {
+        if (s.user.photo_url.startsWith('[')) {
+          const logs = JSON.parse(s.user.photo_url);
+          logs.forEach((log: any) => {
+            if (log.timestamp && log.timestamp.startsWith(selectedDate)) {
+              dayEvents.push({
+                id: log.id || `tr_${Math.random()}`,
+                type: 'TRANSFER',
+                typeLabel: "Guruhga ko'chirildi",
+                student_name: fullName,
+                from_group_name: log.from_group_name,
+                to_group_name: log.to_group_name,
+                to_group_code: log.to_group_code,
+                details: `${log.from_group_name} ➔ ${log.to_group_name}`,
+                timestamp: log.timestamp,
+                timeStr: new Date(log.timestamp).toLocaleTimeString('uz-UZ', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+              });
+            }
+          });
+        } else if (s.user.photo_url.startsWith('LOG:TRANSFER:')) {
+          const parts = s.user.photo_url.replace('LOG:TRANSFER:', '').split('->');
+          const userUpdatedAt = s.user.updated_at || studentCreatedAt;
+          if (userUpdatedAt && userUpdatedAt.startsWith(selectedDate)) {
             dayEvents.push({
-              id: log.id || `tr_${Math.random()}`,
+              id: `legacy_${s.id}`,
               type: 'TRANSFER',
               typeLabel: "Guruhga ko'chirildi",
               student_name: fullName,
-              from_group_name: log.from_group_name,
-              to_group_name: log.to_group_name,
-              to_group_code: log.to_group_code,
-              details: `${log.from_group_name} ➔ ${log.to_group_name}`,
-              timestamp: log.timestamp,
-              timeStr: new Date(log.timestamp).toLocaleTimeString('uz-UZ', {
+              from_group_name: parts[0] || 'Eski guruh',
+              to_group_name: parts[1] || 'Yangi guruh',
+              details: `${parts[0] || ''} ➔ ${parts[1] || ''}`,
+              timestamp: userUpdatedAt,
+              timeStr: new Date(userUpdatedAt).toLocaleTimeString('uz-UZ', {
                 hour: '2-digit',
                 minute: '2-digit',
               }),
             });
           }
-        });
+        }
       }
     } catch (e) {}
   });
@@ -503,8 +529,9 @@ function HistoryView({ groups }: { groups: Group[] }) {
 
   const monthlyStats: Record<string, { count: number; students: any[] }> = {};
   allStudents.forEach((s) => {
-    if (s.created_at) {
-      const d = new Date(s.created_at);
+    const studentCreatedAt = s.joined_at || s.created_at || s.user?.created_at;
+    if (studentCreatedAt) {
+      const d = new Date(studentCreatedAt);
       const monthKey = d.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long' });
       if (!monthlyStats[monthKey]) {
         monthlyStats[monthKey] = { count: 0, students: [] };
@@ -1181,7 +1208,7 @@ function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; on
 }
 
 // ============================================================
-// Group Card Component (Fully Clickable Card, No Boshqarish Button)
+// Group Card Component
 // ============================================================
 function GroupCard({
   group,
@@ -1304,7 +1331,7 @@ function GroupCard({
 }
 
 // ============================================================
-// Group Detail Modal (Includes Delete Group Button Inside Modal)
+// Group Detail Modal
 // ============================================================
 function GroupDetailModal({
   group: initialGroup,
@@ -1853,16 +1880,16 @@ function EditStudentModal({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
-  const addedAtStr =
-    student.created_at || student.joined_at
-      ? new Date(student.created_at || student.joined_at!).toLocaleString('uz-UZ', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : 'Ma\'lum emas';
+  const addedAt = student.joined_at || student.created_at || student.user?.created_at;
+  const addedAtStr = addedAt
+    ? new Date(addedAt).toLocaleString('uz-UZ', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Ma\'lum emas';
 
   let transferLogs: any[] = [];
   try {
@@ -2563,7 +2590,7 @@ function StatsView({ groups }: { groups: Group[] }) {
             }}
           >
             <span style={{ color: 'var(--text-secondary)' }}>Biriktirilgan rahbarlar</span>
-            <span style={{ fontWeight: 700, color: '#34d399' }}>
+            <span style={{ fontWeight: 700, color: '#344399' }}>
               {academicGroups.filter((g) => g.leader_id).length} nafar
             </span>
           </div>

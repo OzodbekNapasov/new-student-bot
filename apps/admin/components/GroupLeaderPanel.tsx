@@ -447,7 +447,7 @@ function EditStudentModal({
           hour: '2-digit',
           minute: '2-digit',
         })
-      : 'Ma\'lum emas';
+      : "Ma'lum emas";
 
   let transferLogs: any[] = [];
   try {
@@ -478,7 +478,7 @@ function EditStudentModal({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Talaba ma\'lumotlarini saqlashda xatolik');
+      if (!res.ok) throw new Error(data.error || "Talaba ma'lumotlarini saqlashda xatolik");
       onSuccess();
     } catch (e: any) {
       setErr(e.message || 'Xatolik yuz berdi');
@@ -561,9 +561,7 @@ function EditStudentModal({
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="form-group">
-            <label className="form-label">
-              Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
-            </label>
+            <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
             <input
               className="input"
               value={fullName}
