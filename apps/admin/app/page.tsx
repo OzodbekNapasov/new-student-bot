@@ -35,12 +35,10 @@ export default function Home() {
         username = tgUser.username || '';
         photoUrl = tgUser.photo_url || '';
       } else {
-        // Development fallback — admin mode for testing
-        telegramId = '8135594558';
-        firstName = 'Admin';
-        lastName = 'Test';
-        username = 'admin';
-        photoUrl = '';
+        // Not inside Telegram WebApp — show error
+        setError('TELEGRAM_ONLY');
+        setLoading(false);
+        return;
       }
 
       const res = await fetch('/api/auth/login', {
@@ -83,6 +81,48 @@ export default function Home() {
     );
   }
 
+  // Not opened in Telegram — block access
+  if (error === 'TELEGRAM_ONLY') {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 20,
+          padding: 32,
+          textAlign: 'center',
+        }}
+      >
+        <span style={{ fontSize: 72 }}>🔒</span>
+        <h2 style={{ fontSize: 22, fontWeight: 800 }}>Faqat Telegram orqali</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
+          Bu platforma faqat Telegram ilovasi ichida ishlaydi.
+          <br />
+          Botga /start yuboring va panelni oching.
+        </p>
+        <a
+          href="https://t.me/NewStudentManagerBot"
+          style={{
+            display: 'inline-block',
+            background: 'linear-gradient(135deg, #0088cc, #00b4ff)',
+            color: '#fff',
+            padding: '14px 28px',
+            borderRadius: 14,
+            fontWeight: 700,
+            fontSize: 15,
+            textDecoration: 'none',
+            marginTop: 8,
+          }}
+        >
+          📱 Botga O'tish
+        </a>
+      </div>
+    );
+  }
+
   if (error || !user) {
     return (
       <div
@@ -108,7 +148,39 @@ export default function Home() {
     );
   }
 
+  // Unknown user — not registered yet (new user who hasn't used the bot)
+  if (!user.role || user.role === 'STUDENT') {
+    // Check if STUDENT role is legitimate (they exist in students table)
+    // For now, show student panel — GroupLeaderPanel handles leader-specific UI
+    if (user.role === 'STUDENT') return <StudentPanel user={user} />;
+
+    // No role assigned yet
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: 16,
+          padding: 32,
+          textAlign: 'center',
+        }}
+      >
+        <span style={{ fontSize: 64 }}>⏳</span>
+        <h2 style={{ fontSize: 20, fontWeight: 700 }}>Hali ro'yxatdan o'tmadingiz</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
+          Botga login kodingizni yuboring.
+          <br />
+          Rahbar bo'lsangiz — admin tomonidan kod beriladi.
+        </p>
+      </div>
+    );
+  }
+
   if (user.role === 'SUPER_ADMIN') return <AdminPanel user={user} />;
   if (user.role === 'GROUP_LEADER') return <GroupLeaderPanel user={user} />;
   return <StudentPanel user={user} />;
 }
+

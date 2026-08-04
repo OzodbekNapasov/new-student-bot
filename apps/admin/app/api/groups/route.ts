@@ -37,7 +37,11 @@ export async function POST(req: Request) {
     // Ensure uniqueness
     let attempt = 0;
     while (attempt < 10) {
-      const { data: existing } = await supabase.from('groups').select('id').eq('login_code', loginCode).single();
+      const { data: existing } = await supabase
+        .from('groups')
+        .select('id')
+        .eq('login_code', loginCode)
+        .single();
       if (!existing) break;
       loginCode = generateLoginCode();
       attempt++;
@@ -45,7 +49,13 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabase
       .from('groups')
-      .insert({ name, code, faculty: faculty || '', academic_year: academic_year || '', login_code: loginCode })
+      .insert({
+        name,
+        code,
+        faculty: faculty || '',
+        academic_year: academic_year || '',
+        login_code: loginCode,
+      })
       .select('*')
       .single();
 

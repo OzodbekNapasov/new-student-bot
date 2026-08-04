@@ -71,7 +71,10 @@ export default function AdminPanel({ user }: Props) {
           }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
-          <div className="avatar avatar-lg" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', fontSize: 24 }}>
+          <div
+            className="avatar avatar-lg"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', fontSize: 24 }}
+          >
             👑
           </div>
           <div>
@@ -89,7 +92,9 @@ export default function AdminPanel({ user }: Props) {
             <h1 style={{ fontSize: 22, fontWeight: 800 }}>
               {user.first_name} {user.last_name}
             </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>@{user.username || 'admin'}</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+              @{user.username || 'admin'}
+            </p>
           </div>
         </div>
       </div>
@@ -121,10 +126,16 @@ export default function AdminPanel({ user }: Props) {
       {/* Tabs */}
       <div style={{ padding: '16px 16px 0' }}>
         <div className="tabs">
-          <button className={`tab ${tab === 'groups' ? 'active' : ''}`} onClick={() => setTab('groups')}>
+          <button
+            className={`tab ${tab === 'groups' ? 'active' : ''}`}
+            onClick={() => setTab('groups')}
+          >
             📚 Guruhlar
           </button>
-          <button className={`tab ${tab === 'stats' ? 'active' : ''}`} onClick={() => setTab('stats')}>
+          <button
+            className={`tab ${tab === 'stats' ? 'active' : ''}`}
+            onClick={() => setTab('stats')}
+          >
             📊 Statistika
           </button>
         </div>
@@ -147,7 +158,9 @@ export default function AdminPanel({ user }: Props) {
                 <div className="spinner" />
               </div>
             ) : groups.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+              <div
+                style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}
+              >
                 <div style={{ fontSize: 48, marginBottom: 16 }}>📂</div>
                 <p style={{ fontWeight: 600, marginBottom: 8 }}>Guruhlar yo'q</p>
                 <p style={{ fontSize: 13 }}>Birinchi guruhni qo'shing</p>
@@ -226,7 +239,7 @@ function GroupCard({
 
   const regenerateCode = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Login kodni yangilaysizmi? Eski kod endi ishlamaydi.")) return;
+    if (!confirm('Login kodni yangilaysizmi? Eski kod endi ishlamaydi.')) return;
     setRegenerating(true);
     await fetch(`/api/groups/${group.id}`, {
       method: 'PATCH',
@@ -239,9 +252,21 @@ function GroupCard({
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: 12,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="avatar" style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))' }}>
+          <div
+            className="avatar"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+            }}
+          >
             {group.name.charAt(0)}
           </div>
           <div>
@@ -288,7 +313,16 @@ function GroupCard({
           marginBottom: 12,
         }}
       >
-        <p style={{ fontSize: 11, color: '#fbbf24', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        <p
+          style={{
+            fontSize: 11,
+            color: '#fbbf24',
+            marginBottom: 6,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+          }}
+        >
           🔑 Rahbar Login Kodi
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -306,7 +340,8 @@ function GroupCard({
           <button
             className="btn btn-sm"
             style={{
-              background: copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+              background:
+                copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
               color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
               border: 'none',
               padding: '6px 12px',
@@ -388,7 +423,14 @@ function GroupDetailModal({
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" style={{ borderRadius: 'var(--radius)', maxHeight: '85vh' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+          }}
+        >
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 700 }}>{group.name}</h2>
             <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{group.code}</p>
@@ -408,15 +450,20 @@ function GroupDetailModal({
             marginBottom: 16,
           }}
         >
-          <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, marginBottom: 8 }}>🔑 Rahbar uchun Login Kodi</p>
+          <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, marginBottom: 8 }}>
+            🔑 Rahbar uchun Login Kodi
+          </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <code style={{ fontSize: 28, fontWeight: 900, letterSpacing: 6, color: '#fbbf24', flex: 1 }}>
+            <code
+              style={{ fontSize: 28, fontWeight: 900, letterSpacing: 6, color: '#fbbf24', flex: 1 }}
+            >
               {group.login_code || '------'}
             </code>
             <button
               className="btn"
               style={{
-                background: copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+                background:
+                  copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
                 color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
                 border: 'none',
               }}
@@ -478,7 +525,14 @@ function GroupDetailModal({
 
         {/* Students */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}
+          >
             <p style={{ fontWeight: 700 }}>👥 Talabalar ({students.length})</p>
             <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)}>
               ＋ Qo'shish
@@ -489,7 +543,14 @@ function GroupDetailModal({
               <div className="spinner" style={{ margin: '0 auto' }} />
             </div>
           ) : students.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: 13 }}>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '20px',
+                color: 'var(--text-muted)',
+                fontSize: 13,
+              }}
+            >
               Talabalar yo'q
             </div>
           ) : (
@@ -507,7 +568,9 @@ function GroupDetailModal({
                     border: '1px solid var(--border)',
                   }}
                 >
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 20 }}>{i + 1}.</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 20 }}>
+                    {i + 1}.
+                  </span>
                   <div className="avatar avatar-sm">{s.user?.first_name?.charAt(0) || '?'}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 13, fontWeight: 600 }}>
@@ -552,14 +615,19 @@ function StatsView({ groups }: { groups: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="card">
-        <h3 style={{ fontWeight: 700, marginBottom: 16, fontSize: 16 }}>📊 Umumiy Ko'rsatkichlar</h3>
+        <h3 style={{ fontWeight: 700, marginBottom: 16, fontSize: 16 }}>
+          📊 Umumiy Ko'rsatkichlar
+        </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
             { label: 'Jami guruhlar', value: groups.length, color: 'var(--accent-blue-light)' },
             { label: 'Rahbar kirgan', value: totalWithLeader, color: '#34d399' },
             { label: 'Rahbar kutilmoqda', value: totalWithoutLeader, color: '#fbbf24' },
           ].map((item) => (
-            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              key={item.label}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
               <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{item.label}</span>
               <span style={{ fontSize: 24, fontWeight: 800, color: item.color }}>{item.value}</span>
             </div>
@@ -572,7 +640,12 @@ function StatsView({ groups }: { groups: any[] }) {
         {groups.map((g) => (
           <div
             key={g.id}
-            style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '10px 0',
+              borderBottom: '1px solid var(--border)',
+            }}
           >
             <div>
               <p style={{ fontSize: 14, fontWeight: 600 }}>{g.name}</p>
@@ -623,7 +696,14 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+          }}
+        >
           <h2 style={{ fontSize: 18, fontWeight: 700 }}>📚 Yangi Guruh</h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             ✕
@@ -640,7 +720,8 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
           }}
         >
           <p style={{ fontSize: 13, color: '#fbbf24' }}>
-            💡 Guruh yaratilgandan so'ng avtomatik <b>login kod</b> beriladi. Kodni rahbarga yuborasiz.
+            💡 Guruh yaratilgandan so'ng avtomatik <b>login kod</b> beriladi. Kodni rahbarga
+            yuborasiz.
           </p>
         </div>
 
@@ -745,7 +826,14 @@ function AddStudentModal({
   return (
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+          }}
+        >
           <h2 style={{ fontSize: 18, fontWeight: 700 }}>👤 Talaba Qo'shish</h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             ✕

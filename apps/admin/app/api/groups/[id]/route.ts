@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     .select(
       `*, 
        leader:users!groups_leader_id_fkey(id, telegram_id, first_name, last_name),
-       students(id, student_card_number, is_active, user:users(id, telegram_id, first_name, last_name, username))`
+       students(id, student_card_number, is_active, user:users(id, telegram_id, first_name, last_name, username))`,
     )
     .eq('id', params.id)
     .single();
@@ -37,7 +37,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       let loginCode = generateLoginCode();
       let attempt = 0;
       while (attempt < 10) {
-        const { data: existing } = await supabase.from('groups').select('id').eq('login_code', loginCode).single();
+        const { data: existing } = await supabase
+          .from('groups')
+          .select('id')
+          .eq('login_code', loginCode)
+          .single();
         if (!existing) break;
         loginCode = generateLoginCode();
         attempt++;

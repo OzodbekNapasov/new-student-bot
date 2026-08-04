@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { isAdminTelegramId } from '@/lib/telegramAuth';
+
+const ADMIN_ID = process.env.ADMIN_TELEGRAM_ID || '8135594558';
 
 export async function POST(req: Request) {
   try {
@@ -11,42 +12,65 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'telegram_id required' }, { status: 400 });
     }
 
-    // Determine role: SUPER_ADMIN if admin ID, otherwise keep existing or default STUDENT
-    const isAdmin = isAdminTelegramId(telegram_id);
+    const isAdmin = String(telegram_id) === String(ADMIN_ID);
 
-    // Upsert user
-    const { data: user, error } = await supabase
+    // First check if user already exists (to preserve their existing role)
+    const { data: existingUser } = await supabase
       .from('users')
-      .upsert(
-        {
+      .select('*')
+      .eq('telegram_id', String(telegram_id))
+      .single();
+
+    let user;
+
+    if (existingUser) {
+      // User exists — only update profile fields, NEVER change role here
+      const role = isAdmin ? 'SUPER_ADMIN' : existingUser.role;
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          first_name: first_name || existingUser.first_name,
+          last_name: last_name || existingUser.last_name,
+          username: username || existingUser.username,
+          photo_url: photo_url || existingUser.photo_url,
+          role,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('telegram_id', String(telegram_id))
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Update user error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      user = data;
+    } else {
+      // New user — create with STUDENT role (or SUPER_ADMIN if admin)
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
           telegram_id: String(telegram_id),
           first_name: first_name || 'User',
           last_name: last_name || '',
           username: username || '',
           photo_url: photo_url || '',
-          role: isAdmin ? 'SUPER_ADMIN' : undefined,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'telegram_id',
-          ignoreDuplicates: false,
-        },
-      )
-      .select('*')
-      .single();
+          role: isAdmin ? 'SUPER_ADMIN' : 'STUDENT',
+        })
+        .select('*')
+        .single();
 
-    if (error) {
-      console.error('Upsert user error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // If admin, force role update
-    if (isAdmin && user.role !== 'SUPER_ADMIN') {
-      await supabase
-        .from('users')
-        .update({ role: 'SUPER_ADMIN' })
-        .eq('telegram_id', String(telegram_id));
-      user.role = 'SUPER_ADMIN';
+      if (error) {
+        // Conflict — user was created between our check and insert
+        const { data: retryUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('telegram_id', String(telegram_id))
+          .single();
+        user = retryUser;
+      } else {
+        user = data;
+      }
     }
 
     return NextResponse.json({ user });
