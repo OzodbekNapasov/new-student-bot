@@ -100,16 +100,26 @@ bot.start(async (ctx) => {
     return;
   }
 
-  // If already a STUDENT
+  // If STUDENT — check if they actually belong to a group
   if (user?.role === 'STUDENT') {
-    await ctx.reply(
-      `🎓 Xush kelibsiz, ${tgUser.first_name}!\n\nDavomatingizni ko'rish uchun:`,
-      Markup.keyboard([[Markup.button.webApp("📊 Davomatimni Ko'rish", webAppUrl)]]).resize(),
-    );
-    return;
+    const { data: studentRecord } = await supabase
+      .from('students')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (studentRecord) {
+      // Real student with a group
+      await ctx.reply(
+        `🎓 Xush kelibsiz, ${tgUser.first_name}!\n\nDavomatingizni ko'rish uchun:`,
+        Markup.keyboard([[Markup.button.webApp("📊 Davomatimni Ko'rish", webAppUrl)]]).resize(),
+      );
+      return;
+    }
+    // STUDENT but no group — fall through to ask for login code
   }
 
-  // New user — ask for login code
+  // New user OR student without group — ask for login code
   await setState(String(tgUser.id), 'WAITING_LOGIN_CODE');
   await ctx.reply(
     `Assalomu alaykum, ${tgUser.first_name}! 👋\n\n` +
@@ -119,6 +129,7 @@ bot.start(async (ctx) => {
     { parse_mode: 'Markdown' },
   );
 });
+
 
 // ============================================================
 // /help command

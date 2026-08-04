@@ -13,43 +13,52 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    expandTelegramApp();
-    login();
+    // Wait for Telegram WebApp script to load then login
+    waitForTelegramAndLogin();
   }, []);
 
-  async function login() {
-    try {
-      // Get Telegram user from WebApp
-      const tgUser = getTelegramUser();
+  async function waitForTelegramAndLogin() {
+    // Telegram WebApp script may not have loaded yet — retry up to 15 times (1.5s)
+    let attempts = 0;
+    const maxAttempts = 15;
 
-      let telegramId: string;
-      let firstName: string;
-      let lastName: string;
-      let username: string;
-      let photoUrl: string;
+    const tryLogin = async () => {
+      attempts++;
+      const tg = (window as any).Telegram?.WebApp;
 
-      if (tgUser) {
-        telegramId = String(tgUser.id);
-        firstName = tgUser.first_name;
-        lastName = tgUser.last_name || '';
-        username = tgUser.username || '';
-        photoUrl = tgUser.photo_url || '';
+      if (tg?.initDataUnsafe?.user) {
+        // Telegram WebApp is ready
+        tg.expand();
+        tg.ready();
+        try {
+          tg.setHeaderColor('#0f172a');
+          tg.setBackgroundColor('#0f172a');
+        } catch {}
+        await login(tg.initDataUnsafe.user);
+      } else if (attempts < maxAttempts) {
+        // Not ready yet — wait 100ms and try again
+        setTimeout(tryLogin, 100);
       } else {
-        // Not inside Telegram WebApp — show error
+        // Gave up — not inside Telegram
         setError('TELEGRAM_ONLY');
         setLoading(false);
-        return;
       }
+    };
 
+    tryLogin();
+  }
+
+  async function login(tgUser: any) {
+    try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          telegram_id: telegramId,
-          first_name: firstName,
-          last_name: lastName,
-          username,
-          photo_url: photoUrl,
+          telegram_id: String(tgUser.id),
+          first_name: tgUser.first_name || 'User',
+          last_name: tgUser.last_name || '',
+          username: tgUser.username || '',
+          photo_url: tgUser.photo_url || '',
         }),
       });
 
@@ -62,6 +71,7 @@ export default function Home() {
       setLoading(false);
     }
   }
+
 
   if (loading) {
     return (
