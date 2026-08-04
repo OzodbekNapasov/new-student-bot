@@ -41,7 +41,10 @@ export default function GroupLeaderPanel({ user }: Props) {
       const data = await res.json();
       const allGroups: Group[] = data.groups || [];
       const mine = allGroups.find(
-        (g) => g.leader_id === user.id || g.leader?.id === user.id || g.leader?.telegram_id === user.telegram_id,
+        (g) =>
+          g.leader_id === user.id ||
+          g.leader?.id === user.id ||
+          g.leader?.telegram_id === user.telegram_id,
       );
       setMyGroup(mine || null);
 
@@ -178,32 +181,55 @@ export default function GroupLeaderPanel({ user }: Props) {
             background: 'rgba(16,185,129,0.1)',
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
-          <div
-            className="avatar avatar-lg"
-            style={{ background: 'linear-gradient(135deg, #059669, #10b981)', fontSize: 24 }}
-          >
-            👨‍🏫
-          </div>
-          <div>
-            <p
-              style={{
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.6)',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              className="avatar avatar-lg"
+              style={{ background: 'linear-gradient(135deg, #059669, #10b981)', fontSize: 24 }}
             >
-              Guruh Rahbari
-            </p>
-            <h1 style={{ fontSize: 20, fontWeight: 800 }}>
-              {user.first_name} {user.last_name}
-            </h1>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-              📚 {myGroup.name} — {myGroup.code}
-            </p>
+              👨‍🏫
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.6)',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+              >
+                Guruh Rahbari
+              </p>
+              <h1 style={{ fontSize: 20, fontWeight: 800 }}>
+                {user.first_name} {user.last_name}
+              </h1>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
+                📚 {myGroup.name} — {myGroup.code}
+              </p>
+            </div>
           </div>
+          <button
+            className="btn btn-sm"
+            style={{
+              background: 'rgba(239, 68, 68, 0.2)',
+              color: '#ef4444',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              padding: '6px 12px',
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 13,
+            }}
+            onClick={() => {
+              if (confirm('Hisobdan chiqmoqchimisiz?')) {
+                localStorage.removeItem('smp_user');
+                window.location.reload();
+              }
+            }}
+          >
+            🚪 Chiqish
+          </button>
         </div>
       </div>
 

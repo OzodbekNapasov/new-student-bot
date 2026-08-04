@@ -106,7 +106,7 @@ export default function Home() {
       const data = await res.json();
 
       if (data.user?.role !== 'SUPER_ADMIN') {
-        setAdminAuthError("Ruxsat berilmadi: Siz Super Admin emassiz");
+        setAdminAuthError('Ruxsat berilmadi: Siz Super Admin emassiz');
         return;
       }
 
@@ -226,7 +226,9 @@ export default function Home() {
               </h3>
               <form onSubmit={handleAdminManualLogin}>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}>
+                  <label
+                    style={{ display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}
+                  >
                     Admin Telegram ID
                   </label>
                   <input

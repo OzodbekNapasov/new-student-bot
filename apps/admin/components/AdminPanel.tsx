@@ -70,32 +70,55 @@ export default function AdminPanel({ user }: Props) {
             background: 'rgba(59,130,246,0.1)',
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
-          <div
-            className="avatar avatar-lg"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', fontSize: 24 }}
-          >
-            👑
-          </div>
-          <div>
-            <p
-              style={{
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.6)',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              className="avatar avatar-lg"
+              style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', fontSize: 24 }}
             >
-              Super Admin
-            </p>
-            <h1 style={{ fontSize: 22, fontWeight: 800 }}>
-              {user.first_name} {user.last_name}
-            </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-              @{user.username || 'admin'}
-            </p>
+              👑
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.6)',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+              >
+                Super Admin
+              </p>
+              <h1 style={{ fontSize: 22, fontWeight: 800 }}>
+                {user.first_name} {user.last_name}
+              </h1>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                @{user.username || 'admin'}
+              </p>
+            </div>
           </div>
+          <button
+            className="btn btn-sm"
+            style={{
+              background: 'rgba(239, 68, 68, 0.2)',
+              color: '#ef4444',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              padding: '6px 12px',
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 13,
+            }}
+            onClick={() => {
+              if (confirm('Hisobdan chiqmoqchimisiz?')) {
+                localStorage.removeItem('smp_user');
+                window.location.reload();
+              }
+            }}
+          >
+            🚪 Chiqish
+          </button>
         </div>
       </div>
 
