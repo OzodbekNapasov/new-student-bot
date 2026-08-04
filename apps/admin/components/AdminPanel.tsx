@@ -42,16 +42,19 @@ import {
   Layers,
   CheckCircle2,
   PieChart,
+  Hash,
 } from 'lucide-react';
 
 // ============================================================
-// Helper: Export to native Excel (.xlsx) format using SheetJS
+// Helper: Export to native Excel (.xlsx) format with Gridlines & Student ID
 // ============================================================
 function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yxati') {
   const data = students.map((s, i) => {
     const timeVal = s.joined_at || s.created_at || s.user?.created_at;
+    const studentId = s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
     return {
       'T/R': i + 1,
+      'Talaba ID': studentId,
       Guruhi: s.group?.name || s.group_name || 'Guruhsiz',
       'Talabaning Familiyasi, Ismi va Sharifi':
         `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
@@ -71,10 +74,13 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   const worksheet = XLSX.utils.json_to_sheet(data);
   worksheet['!cols'] = [
     { wch: 8 },
+    { wch: 18 },
     { wch: 22 },
     { wch: 45 },
     { wch: 24 },
   ];
+  // Force Excel to render gridlines for all cells when opened
+  worksheet['!views'] = [{ showGridLines: true }];
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Talabalar');
@@ -98,6 +104,8 @@ function exportLogsToExcel(events: any[], title: string = 'Tarix_Log') {
     { wch: 45 },
     { wch: 45 },
   ];
+  // Force Excel to render gridlines for all cells when opened
+  worksheet['!views'] = [{ showGridLines: true }];
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tarix_Log');
@@ -850,7 +858,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
 }
 
 // ============================================================
-// Accordion Students View
+// Accordion Students View (Summary list with Student ID Column)
 // ============================================================
 function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; onGroupUpdated: () => void }) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(groups[0]?.id || null);
@@ -930,10 +938,10 @@ function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; on
           <h2
             style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
           >
-            <Users size={20} style={{ color: '#38bdf8' }} /> Yig'ma Ro'yxat
+            <Users size={20} style={{ color: '#38bdf8' }} /> Yig'ma Ro'yxat (Talaba ID bilan)
           </h2>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-            Guruhlar bo'yicha talabalar yig'ma jadvali
+            Guruhlar bo'yicha talabalar yig'ma jadvali va unikal ID kodlari
           </p>
         </div>
         <button
@@ -1116,11 +1124,20 @@ function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; on
                           <th
                             style={{
                               padding: '10px 14px',
-                              width: 60,
+                              width: 50,
                               borderBottom: '1px solid var(--border)',
                             }}
                           >
                             T/R
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              width: 140,
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            Talaba ID
                           </th>
                           <th
                             style={{
@@ -1150,39 +1167,59 @@ function AccordionStudentsView({ groups, onGroupUpdated }: { groups: Group[]; on
                         </tr>
                       </thead>
                       <tbody>
-                        {students.map((s, idx) => (
-                          <tr
-                            key={s.id}
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
-                          >
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                              {idx + 1}
-                            </td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
-                              {group.name}
-                            </td>
-                            <td style={{ padding: '10px 14px', fontWeight: 600 }}>
-                              {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
-                                `${s.user?.first_name || ''}`}
-                            </td>
-                            <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                              <button
-                                className="btn btn-ghost btn-sm"
-                                style={{
-                                  color: '#fbbf24',
-                                  background: 'rgba(245, 158, 11, 0.1)',
-                                  border: '1px solid rgba(245, 158, 11, 0.2)',
-                                  padding: '4px 8px',
-                                  borderRadius: 6,
-                                }}
-                                onClick={() => setEditingStudent(s)}
-                                title="Tahrirlash"
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {students.map((s, idx) => {
+                          const studentId =
+                            s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
+
+                          return (
+                            <tr
+                              key={s.id}
+                              style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
+                            >
+                              <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                                {idx + 1}
+                              </td>
+                              <td style={{ padding: '10px 14px' }}>
+                                <span
+                                  style={{
+                                    fontFamily: 'monospace',
+                                    fontWeight: 700,
+                                    color: '#38bdf8',
+                                    background: 'rgba(56, 189, 248, 0.12)',
+                                    padding: '3px 8px',
+                                    borderRadius: 6,
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  {studentId}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
+                                {group.name}
+                              </td>
+                              <td style={{ padding: '10px 14px', fontWeight: 600 }}>
+                                {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+                                  `${s.user?.first_name || ''}`}
+                              </td>
+                              <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                                <button
+                                  className="btn btn-ghost btn-sm"
+                                  style={{
+                                    color: '#fbbf24',
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    border: '1px solid rgba(245, 158, 11, 0.2)',
+                                    padding: '4px 8px',
+                                    borderRadius: 6,
+                                  }}
+                                  onClick={() => setEditingStudent(s)}
+                                  title="Tahrirlash"
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1756,6 +1793,7 @@ function GroupDetailModal({
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
                     <th style={{ padding: '12px 16px', width: 50, borderBottom: '1px solid var(--border)' }}>T/R</th>
+                    <th style={{ padding: '12px 16px', width: 140, borderBottom: '1px solid var(--border)' }}>Talaba ID</th>
                     <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
                       Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                     </th>
@@ -1765,53 +1803,73 @@ function GroupDetailModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map((s, i) => (
-                    <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
-                      <td style={{ padding: '12px 16px', fontWeight: 600 }}>
-                        {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: 6 }}>
-                          <button
-                            className="btn btn-ghost btn-sm"
+                  {students.map((s, i) => {
+                    const studentId =
+                      s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
+
+                    return (
+                      <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{i + 1}</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span
                             style={{
-                              color: '#fbbf24',
-                              background: 'rgba(245, 158, 11, 0.1)',
-                              border: '1px solid rgba(245, 158, 11, 0.2)',
-                              fontWeight: 600,
-                              padding: '6px 10px',
-                              borderRadius: 8,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 4,
-                            }}
-                            onClick={() => setEditingStudent(s)}
-                            title="Talabani tahrirlash"
-                          >
-                            <Edit3 size={14} />
-                          </button>
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            style={{
+                              fontFamily: 'monospace',
+                              fontWeight: 700,
                               color: '#38bdf8',
-                              background: 'rgba(56, 189, 248, 0.1)',
-                              border: '1px solid rgba(56, 189, 248, 0.2)',
-                              fontWeight: 600,
-                              padding: '6px 12px',
-                              borderRadius: 8,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 6,
+                              background: 'rgba(56, 189, 248, 0.12)',
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              fontSize: 12,
                             }}
-                            onClick={() => setTransferringStudent(s)}
                           >
-                            <ArrowRightLeft size={14} /> Ko'chirish
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {studentId}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px 16px', fontWeight: 600 }}>
+                          {`${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`}
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: 6 }}>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              style={{
+                                color: '#fbbf24',
+                                background: 'rgba(245, 158, 11, 0.1)',
+                                border: '1px solid rgba(245, 158, 11, 0.2)',
+                                fontWeight: 600,
+                                padding: '6px 10px',
+                                borderRadius: 8,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                              }}
+                              onClick={() => setEditingStudent(s)}
+                              title="Talabani tahrirlash"
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              style={{
+                                color: '#38bdf8',
+                                background: 'rgba(56, 189, 248, 0.1)',
+                                border: '1px solid rgba(56, 189, 248, 0.2)',
+                                fontWeight: 600,
+                                padding: '6px 12px',
+                                borderRadius: 8,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                              }}
+                              onClick={() => setTransferringStudent(s)}
+                            >
+                              <ArrowRightLeft size={14} /> Ko'chirish
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1880,6 +1938,8 @@ function EditStudentModal({
   const [fullName, setFullName] = useState(currentFullName);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
+
+  const studentId = student.student_card_number || `STU-${(student.id || '').slice(0, 8).toUpperCase()}`;
 
   const addedAt = student.joined_at || student.created_at || student.user?.created_at;
   const addedAtStr = addedAt
@@ -1964,6 +2024,12 @@ function EditStudentModal({
             gap: 10,
           }}
         >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+            <Hash size={16} style={{ color: '#38bdf8' }} />
+            <span style={{ color: 'var(--text-muted)' }}>Talaba Unikal ID:</span>
+            <b style={{ color: '#38bdf8', fontFamily: 'monospace', fontSize: 14 }}>{studentId}</b>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
             <Clock size={16} style={{ color: '#fbbf24' }} />
             <span style={{ color: 'var(--text-muted)' }}>Guruhga/Tizimga qo'shilgan vaqti:</span>
