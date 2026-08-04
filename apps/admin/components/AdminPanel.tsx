@@ -580,6 +580,20 @@ function GroupDetailModal({
                       {s.user?.username ? `@${s.user.username}` : `ID: ${s.user?.telegram_id}`}
                     </p>
                   </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      title="Talabani o'chirish"
+                      onClick={async () => {
+                        if (!confirm(`${s.user?.first_name}ni guruhdan o'chirmoqchimisiz?`)) return;
+                        await fetch(`/api/students/${s.id}`, { method: 'DELETE' });
+                        fetchStudents();
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

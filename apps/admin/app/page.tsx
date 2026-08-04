@@ -15,28 +15,16 @@ export default function Home() {
   const [adminAuthError, setAdminAuthError] = useState('');
 
   useEffect(() => {
-    // 1. Check local session first
-    const savedUser = localStorage.getItem('smp_user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (parsed?.id && parsed?.role) {
-          setUser(parsed);
-          setLoading(false);
-          return;
-        }
-      } catch {}
-    }
-
-    // 2. Try Telegram WebApp login
-    waitForTelegramAndLogin();
+    // Start login flow — always prioritize Telegram WebApp if available
+    initAuth();
   }, []);
 
-  async function waitForTelegramAndLogin() {
+  async function initAuth() {
+    // 1. Try Telegram WebApp first (retry up to 15 times for script load)
     let attempts = 0;
     const maxAttempts = 15;
 
-    const tryLogin = async () => {
+    const tryTelegram = async () => {
       attempts++;
       const tg = (window as any).Telegram?.WebApp;
 
@@ -47,17 +35,31 @@ export default function Home() {
           tg.setHeaderColor('#0f172a');
           tg.setBackgroundColor('#0f172a');
         } catch {}
+        // Perform fresh login with Telegram user to get up-to-date role from DB
         await performLogin(tg.initDataUnsafe.user);
       } else if (attempts < maxAttempts) {
-        setTimeout(tryLogin, 100);
+        setTimeout(tryTelegram, 100);
       } else {
-        // Not in Telegram WebApp and no saved session
+        // Not inside Telegram — check local saved session
+        const savedUser = localStorage.getItem('smp_user');
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            if (parsed?.telegram_id) {
+              // Refresh session from server
+              await performLogin({ id: parsed.telegram_id, first_name: parsed.first_name });
+              return;
+            }
+          } catch {}
+        }
+
+        // Neither Telegram WebApp nor saved session
         setError('TELEGRAM_ONLY');
         setLoading(false);
       }
     };
 
-    tryLogin();
+    tryTelegram();
   }
 
   async function performLogin(tgUser: any) {
@@ -104,7 +106,7 @@ export default function Home() {
       const data = await res.json();
 
       if (data.user?.role !== 'SUPER_ADMIN') {
-        setAdminAuthError('Ruxsat berilmadi: Siz Super Admin emassiz');
+        setAdminAuthError("Ruxsat berilmadi: Siz Super Admin emassiz");
         return;
       }
 
@@ -224,9 +226,7 @@ export default function Home() {
               </h3>
               <form onSubmit={handleAdminManualLogin}>
                 <div style={{ marginBottom: 16 }}>
-                  <label
-                    style={{ display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}
-                  >
+                  <label style={{ display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}>
                     Admin Telegram ID
                   </label>
                   <input

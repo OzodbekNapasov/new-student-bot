@@ -40,7 +40,9 @@ export default function GroupLeaderPanel({ user }: Props) {
       const res = await fetch('/api/groups');
       const data = await res.json();
       const allGroups: Group[] = data.groups || [];
-      const mine = allGroups.find((g) => g.leader_id === user.id);
+      const mine = allGroups.find(
+        (g) => g.leader_id === user.id || g.leader?.id === user.id || g.leader?.telegram_id === user.telegram_id,
+      );
       setMyGroup(mine || null);
 
       if (mine) {
