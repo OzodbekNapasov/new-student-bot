@@ -1,7 +1,19 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { User, Attendance, Group, Student } from '@/lib/types';
+import { User, Attendance, Student } from '@/lib/types';
+import {
+  GraduationCap,
+  BookOpen,
+  ClipboardList,
+  Calendar,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Inbox,
+  Loader2,
+} from 'lucide-react';
 
 interface Props {
   user: User;
@@ -16,7 +28,6 @@ export default function StudentPanel({ user }: Props) {
   const fetch30Days = useCallback(async () => {
     setLoading(true);
     try {
-      // Find my student record
       const res = await fetch('/api/students');
       const data = await res.json();
       const allStudents: Student[] = data.students || [];
@@ -24,7 +35,6 @@ export default function StudentPanel({ user }: Props) {
       setMyStudentRecord(mine || null);
 
       if (mine) {
-        // Last 30 days attendance
         const attRes = await fetch(`/api/attendance?group_id=${mine.group_id}`);
         const attData = await attRes.json();
         setAttendance(attData.attendance || []);
@@ -46,13 +56,6 @@ export default function StudentPanel({ user }: Props) {
   const totalDays = attendance.length || 1;
   const percentage = Math.round((presentCount / totalDays) * 100);
 
-  const statusEmoji: Record<string, string> = {
-    PRESENT: '✅',
-    ABSENT: '❌',
-    EXCUSED: '🔶',
-    LATE: '🕐',
-  };
-
   const statusLabel: Record<string, string> = {
     PRESENT: 'Keldim',
     ABSENT: 'Kelmadim',
@@ -67,6 +70,21 @@ export default function StudentPanel({ user }: Props) {
     LATE: '#a78bfa',
   };
 
+  const renderStatusIcon = (status: string) => {
+    switch (status) {
+      case 'PRESENT':
+        return <CheckCircle2 size={32} style={{ color: '#34d399' }} />;
+      case 'ABSENT':
+        return <XCircle size={32} style={{ color: '#f87171' }} />;
+      case 'EXCUSED':
+        return <AlertCircle size={32} style={{ color: '#fbbf24' }} />;
+      case 'LATE':
+        return <Clock size={32} style={{ color: '#a78bfa' }} />;
+      default:
+        return <Clock size={32} style={{ color: 'var(--text-muted)' }} />;
+    }
+  };
+
   if (loading) {
     return (
       <div
@@ -77,16 +95,17 @@ export default function StudentPanel({ user }: Props) {
           justifyContent: 'center',
           minHeight: '100vh',
           gap: 16,
+          background: 'var(--bg-primary)',
         }}
       >
-        <div className="spinner" style={{ width: 48, height: 48 }} />
-        <p style={{ color: 'var(--text-secondary)' }}>Ma'lumotlar yuklanmoqda...</p>
+        <Loader2 className="spinner-icon" size={44} style={{ color: '#38bdf8' }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Ma'lumotlar yuklanmoqda...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 24 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 24, background: 'var(--bg-primary)' }}>
       {/* Header */}
       <div
         style={{
@@ -98,21 +117,23 @@ export default function StudentPanel({ user }: Props) {
       >
         <div
           style={{
-            position: 'absolute',
-            top: -40,
-            right: -40,
-            width: 150,
-            height: 150,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            position: 'relative',
           }}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+        >
           <div
             className="avatar avatar-lg"
-            style={{ background: 'linear-gradient(135deg, #11998e, #38ef7d)', fontSize: 24 }}
+            style={{
+              background: 'linear-gradient(135deg, #11998e, #38ef7d)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+            }}
           >
-            🎓
+            <GraduationCap size={28} />
           </div>
           <div>
             <p
@@ -126,12 +147,12 @@ export default function StudentPanel({ user }: Props) {
             >
               Talaba
             </p>
-            <h1 style={{ fontSize: 22, fontWeight: 800 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>
               {user.first_name} {user.last_name}
             </h1>
             {myStudentRecord?.group && (
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-                📚 {(myStudentRecord.group as any)?.name}
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BookOpen size={14} /> {(myStudentRecord.group as any)?.name}
               </p>
             )}
           </div>
@@ -174,13 +195,13 @@ export default function StudentPanel({ user }: Props) {
             className={`tab ${tab === 'today' ? 'active' : ''}`}
             onClick={() => setTab('today')}
           >
-            📋 Bugun
+            <ClipboardList size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Bugun
           </button>
           <button
             className={`tab ${tab === 'history' ? 'active' : ''}`}
             onClick={() => setTab('history')}
           >
-            📅 Tarix
+            <Calendar size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Tarix
           </button>
         </div>
       </div>
@@ -201,8 +222,8 @@ export default function StudentPanel({ user }: Props) {
                 marginBottom: 16,
               }}
             >
-              <div style={{ fontSize: 56, marginBottom: 12 }}>
-                {todayAtt ? statusEmoji[todayAtt.status] : '⏳'}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                {todayAtt ? renderStatusIcon(todayAtt.status) : <Clock size={44} style={{ color: 'var(--text-muted)' }} />}
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
                 {todayAtt ? statusLabel[todayAtt.status] : 'Hali belgilanmagan'}
@@ -215,18 +236,6 @@ export default function StudentPanel({ user }: Props) {
                   day: 'numeric',
                 })}
               </p>
-              {todayAtt && (
-                <span
-                  className="badge"
-                  style={{
-                    marginTop: 12,
-                    background: `${statusColor[todayAtt.status]}20`,
-                    color: statusColor[todayAtt.status],
-                  }}
-                >
-                  {statusLabel[todayAtt.status]}
-                </span>
-              )}
             </div>
 
             {/* Progress bar */}
@@ -276,7 +285,9 @@ export default function StudentPanel({ user }: Props) {
                 className="card"
                 style={{ marginTop: 16, textAlign: 'center', padding: '32px 20px' }}
               >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                  <Inbox size={44} style={{ color: 'var(--text-muted)' }} />
+                </div>
                 <p style={{ fontWeight: 600, marginBottom: 8 }}>Guruhga biriktirilmadingiz</p>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                   Guruh rahbari yoki admin bilan bog'laning.
@@ -292,7 +303,9 @@ export default function StudentPanel({ user }: Props) {
               <div
                 style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}
               >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                  <Calendar size={44} style={{ color: 'var(--text-muted)' }} />
+                </div>
                 <p style={{ fontWeight: 600 }}>Davomat yozuvlari yo'q</p>
               </div>
             ) : (
@@ -311,7 +324,7 @@ export default function StudentPanel({ user }: Props) {
                         borderLeft: `3px solid ${statusColor[a.status]}`,
                       }}
                     >
-                      <span style={{ fontSize: 24 }}>{statusEmoji[a.status]}</span>
+                      <div>{renderStatusIcon(a.status)}</div>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontWeight: 600, fontSize: 14 }}>
                           {new Date(a.date).toLocaleDateString('uz-UZ', {

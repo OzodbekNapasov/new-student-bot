@@ -3,6 +3,44 @@
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { User, Group, Student } from '@/lib/types';
+import {
+  ShieldCheck,
+  LogOut,
+  BookOpen,
+  Users,
+  History,
+  BarChart3,
+  Plus,
+  Folder,
+  FolderOpen,
+  FileSpreadsheet,
+  Download,
+  UserCheck,
+  Bookmark,
+  Copy,
+  Check,
+  Sliders,
+  Trash2,
+  Edit3,
+  Key,
+  RefreshCw,
+  ArrowRightLeft,
+  GraduationCap,
+  Ban,
+  TrendingUp,
+  Loader2,
+  AlertTriangle,
+  X,
+  ChevronDown,
+  ChevronUp,
+  UserPlus,
+  ListPlus,
+  User as UserIcon,
+  Calendar,
+  Clock,
+  Sparkles,
+  Layers,
+} from 'lucide-react';
 
 // ============================================================
 // Helper: Export to native Excel (.xlsx) format using SheetJS
@@ -30,7 +68,7 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   // Set column widths
   worksheet['!cols'] = [
     { wch: 8 }, // T/R
-    { wch: 20 }, // Guruhi
+    { wch: 22 }, // Guruhi
     { wch: 45 }, // Talabaning Familiyasi, Ismi va Sharifi
     { wch: 24 }, // Qo'shilgan sana va vaqt
   ];
@@ -82,6 +120,9 @@ export default function AdminPanel({ user }: { user: User }) {
     }
   };
 
+  const academicGroups = groups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN');
+  const statusGroups = groups.filter((g) => g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN');
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* Header */}
@@ -90,15 +131,21 @@ export default function AdminPanel({ user }: { user: User }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               className="avatar"
-              style={{ background: 'linear-gradient(135deg, #0088cc, #00b4ff)' }}
+              style={{
+                background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+              }}
             >
-              👑
+              <ShieldCheck size={24} />
             </div>
             <div>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>
                 SUPER ADMIN
               </p>
-              <h1 style={{ fontSize: 22, fontWeight: 800 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>
                 {user.first_name} {user.last_name}
               </h1>
             </div>
@@ -109,11 +156,14 @@ export default function AdminPanel({ user }: { user: User }) {
               background: 'rgba(239, 68, 68, 0.2)',
               color: '#ef4444',
               border: '1px solid rgba(239, 68, 68, 0.4)',
-              padding: '6px 12px',
+              padding: '8px 14px',
               borderRadius: 10,
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: 13,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
             }}
             onClick={() => {
               if (confirm('Hisobdan chiqmoqchimisiz?')) {
@@ -122,7 +172,7 @@ export default function AdminPanel({ user }: { user: User }) {
               }
             }}
           >
-            🚪 Chiqish
+            <LogOut size={16} /> Chiqish
           </button>
         </div>
       </div>
@@ -132,92 +182,178 @@ export default function AdminPanel({ user }: { user: User }) {
         <div className="grid-3">
           <div className="stat-card">
             <span className="stat-value" style={{ color: 'var(--accent-blue-light)' }}>
-              {groups.length}
+              {academicGroups.length}
             </span>
-            <span className="stat-label">Guruhlar</span>
+            <span className="stat-label">O'quv Guruhlari</span>
           </div>
           <div className="stat-card">
             <span className="stat-value" style={{ color: '#34d399' }}>
-              {groups.filter((g) => g.leader_id).length}
+              {academicGroups.filter((g) => g.leader_id).length}
             </span>
-            <span className="stat-label">Rahbarlar</span>
+            <span className="stat-label">Biriktirilgan Rahbarlar</span>
           </div>
           <div className="stat-card">
-            <span className="stat-value" style={{ color: '#a78bfa' }}>
-              {groups.filter((g) => !g.leader_id).length}
+            <span className="stat-value" style={{ color: '#fbbf24' }}>
+              {statusGroups.length}
             </span>
-            <span className="stat-label">Kutilmoqda</span>
+            <span className="stat-label">Maxsus Statuslar</span>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Navigation Tabs */}
       <div style={{ padding: '16px 16px 0' }}>
         <div className="tabs">
           <button
             className={`tab ${tab === 'groups' ? 'active' : ''}`}
             onClick={() => setTab('groups')}
           >
-            📚 Guruhlar
+            <BookOpen size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Guruhlar
           </button>
           <button
             className={`tab ${tab === 'accordion' ? 'active' : ''}`}
             onClick={() => setTab('accordion')}
           >
-            👥 Yig'ma Ro'yxat
+            <Users size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Yig'ma Ro'yxat
           </button>
           <button
             className={`tab ${tab === 'history' ? 'active' : ''}`}
             onClick={() => setTab('history')}
           >
-            📜 Tarix va Log
+            <History size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Tarix va Log
           </button>
           <button
             className={`tab ${tab === 'stats' ? 'active' : ''}`}
             onClick={() => setTab('stats')}
           >
-            📊 Statistika
+            <BarChart3 size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} /> Statistika
           </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content */}
       <div style={{ padding: '16px 16px 80px' }}>
         {tab === 'groups' && (
-          <div className="animate-in">
-            <button
-              className="btn btn-primary"
-              style={{ width: '100%', marginBottom: 16 }}
-              onClick={() => setShowAddGroup(true)}
+          <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Top Action Header */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 12,
+                background: 'rgba(255,255,255,0.03)',
+                padding: 16,
+                borderRadius: 16,
+                border: '1px solid var(--border)',
+              }}
             >
-              ＋ Yangi guruh qo'shish
-            </button>
+              <div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Layers size={22} style={{ color: '#38bdf8' }} /> Guruhlar Boshqaruvi
+                </h2>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+                  O'quv guruhlarini yaratish, rahbar tayinlash va statuslarni nazorat qilish
+                </p>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                style={{ padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                onClick={() => setShowAddGroup(true)}
+              >
+                <Plus size={18} /> Yangi guruh qo'shish
+              </button>
+            </div>
 
             {loading ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-                <div className="spinner" />
-              </div>
-            ) : groups.length === 0 ? (
-              <div
-                style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📂</div>
-                <p style={{ fontWeight: 600, marginBottom: 8 }}>Guruhlar yo'q</p>
-                <p style={{ fontSize: 13 }}>Birinchi guruhni qo'shing</p>
+                <Loader2 className="spinner-icon" size={40} style={{ color: '#38bdf8' }} />
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {groups.map((g) => (
-                  <GroupCard
-                    key={g.id}
-                    group={g}
-                    copiedCode={copiedCode}
-                    onCopy={copyCode}
-                    onViewDetail={() => setShowGroupDetail(g)}
-                    onDelete={() => deleteGroup(g.id)}
-                  />
-                ))}
-              </div>
+              <>
+                {/* 1. Academic Groups Section */}
+                <div>
+                  <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <BookOpen size={18} style={{ color: '#38bdf8' }} />
+                    <h3 style={{ fontSize: 16, fontWeight: 700 }}>
+                      O'quv Guruhlari ({academicGroups.length} ta)
+                    </h3>
+                  </div>
+
+                  {academicGroups.length === 0 ? (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '40px 20px',
+                        color: 'var(--text-muted)',
+                        background: 'rgba(255,255,255,0.02)',
+                        borderRadius: 14,
+                        border: '1px dashed var(--border)',
+                      }}
+                    >
+                      <Folder size={40} style={{ color: 'var(--text-muted)', marginBottom: 8 }} />
+                      <p style={{ fontWeight: 600 }}>O'quv guruhlari yo'q</p>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: 14,
+                      }}
+                    >
+                      {academicGroups.map((g) => (
+                        <GroupCard
+                          key={g.id}
+                          group={g}
+                          copiedCode={copiedCode}
+                          onCopy={copyCode}
+                          onViewDetail={() => setShowGroupDetail(g)}
+                          onDelete={() => deleteGroup(g.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Special Status Groups Section */}
+                {statusGroups.length > 0 && (
+                  <div style={{ marginTop: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+                    <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Bookmark size={18} style={{ color: '#fbbf24' }} />
+                      <div>
+                        <h3 style={{ fontSize: 16, fontWeight: 700 }}>
+                          Maxsus Status Guruhlari (Akademik & Safdan Chiqqanlar)
+                        </h3>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          Boshqa guruhlardan o'tkazilgan talabalar jamlanmasi (Rahbar talab qilinmaydi)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: 14,
+                      }}
+                    >
+                      {statusGroups.map((g) => (
+                        <GroupCard
+                          key={g.id}
+                          group={g}
+                          copiedCode={copiedCode}
+                          onCopy={copyCode}
+                          onViewDetail={() => setShowGroupDetail(g)}
+                          onDelete={() => deleteGroup(g.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -343,15 +479,17 @@ function HistoryView({ groups }: { groups: Group[] }) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: 17, fontWeight: 700 }}>📜 O'zgarishlar Tarixi va Log</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <History size={20} style={{ color: '#38bdf8' }} /> O'zgarishlar Tarixi va Log
+          </h2>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
             Sana bo'yicha talabalar qo'shilishi va oylik statistika
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-            📅 Sanani tanlang:
+          <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Calendar size={16} /> Sanani tanlang:
           </label>
           <input
             type="date"
@@ -376,23 +514,23 @@ function HistoryView({ groups }: { groups: Group[] }) {
           }}
         >
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-              🕒 {selectedDate} sanasidagi o'zgarishlar ({dayStudents.length} ta)
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Clock size={18} style={{ color: '#fbbf24' }} /> {selectedDate} sanasidagi o'zgarishlar ({dayStudents.length} ta)
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               Ushbu kunda qo'shilgan talabalar va ularning guruhlari
             </p>
           </div>
           {dayStudents.length > 0 && (
-            <button className="btn btn-success btn-sm" onClick={handleExportSelectedDate}>
-              📥 Excel (.xlsx) yuklab olish
+            <button className="btn btn-success btn-sm" onClick={handleExportSelectedDate} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <FileSpreadsheet size={15} /> Excel (.xlsx) yuklab olish
             </button>
           )}
         </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 24 }}>
-            <div className="spinner" style={{ margin: '0 auto' }} />
+            <Loader2 className="spinner-icon" size={32} style={{ margin: '0 auto', color: '#38bdf8' }} />
           </div>
         ) : dayStudents.length === 0 ? (
           <div
@@ -403,7 +541,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
               fontSize: 13,
             }}
           >
-            📭 {selectedDate} sanasida hech qanday talaba qo'shilmagan.
+            {selectedDate} sanasida hech qanday talaba qo'shilmagan.
           </div>
         ) : (
           <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
@@ -463,7 +601,7 @@ function HistoryView({ groups }: { groups: Group[] }) {
                         {idx + 1}
                       </td>
                       <td style={{ padding: '10px 14px', color: '#fbbf24', fontWeight: 700 }}>
-                        🕒 {timeStr}
+                        {timeStr}
                       </td>
                       <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
                         {s.group?.name || 'Guruhsiz'}
@@ -480,8 +618,8 @@ function HistoryView({ groups }: { groups: Group[] }) {
 
       {/* Monthly Statistics Card */}
       <div className="card">
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>
-          📈 Oylar bo'yicha talabalar kelishi
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TrendingUp size={20} style={{ color: '#34d399' }} /> Oylar bo'yicha talabalar kelishi
         </h3>
         {Object.keys(monthlyStats).length === 0 ? (
           <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ma'lumot yo'q</p>
@@ -501,8 +639,8 @@ function HistoryView({ groups }: { groups: Group[] }) {
                 }}
               >
                 <div>
-                  <h4 style={{ fontSize: 15, fontWeight: 700, textTransform: 'capitalize' }}>
-                    📅 {month}
+                  <h4 style={{ fontSize: 15, fontWeight: 700, textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Calendar size={16} /> {month}
                   </h4>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     Jami qo'shilgan talabalar:{' '}
@@ -511,10 +649,10 @@ function HistoryView({ groups }: { groups: Group[] }) {
                 </div>
                 <button
                   className="btn btn-ghost btn-sm"
-                  style={{ color: '#34d399', fontWeight: 600, fontSize: 12 }}
+                  style={{ color: '#34d399', fontWeight: 600, fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   onClick={() => handleExportMonth(month, item.students)}
                 >
-                  📊 Excel (.xlsx) yuklash
+                  <FileSpreadsheet size={14} /> Excel (.xlsx) yuklash
                 </button>
               </div>
             ))}
@@ -602,17 +740,19 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: 17, fontWeight: 700 }}>👥 Yig'ma Ro'yxat</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Users size={20} style={{ color: '#38bdf8' }} /> Yig'ma Ro'yxat
+          </h2>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
             Guruhlar bo'yicha talabalar yig'ma jadvali
           </p>
         </div>
         <button
           className="btn btn-success btn-sm"
-          style={{ boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+          style={{ boxShadow: '0 4px 12px rgba(16,185,129,0.3)', display: 'inline-flex', alignItems: 'center', gap: 6 }}
           onClick={handleExportAll}
         >
-          📥 Excel (.xlsx) yuklash (Barchasi)
+          <Download size={15} /> Excel (.xlsx) yuklash (Barchasi)
         </button>
       </div>
 
@@ -650,7 +790,9 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
+                <span style={{ color: isExpanded ? '#38bdf8' : 'var(--text-muted)' }}>
+                  {isExpanded ? <FolderOpen size={24} /> : <Folder size={24} />}
+                </span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
                     {group.name}{' '}
@@ -658,9 +800,13 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     {isStatusGroup ? (
-                      <span style={{ color: '#38bdf8', fontWeight: 600 }}>📌 Maxsus status guruhi</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <Bookmark size={14} /> Maxsus status guruhi
+                      </span>
                     ) : (
-                      <span>👨‍🏫 Rahbar: <b>{leaderName}</b></span>
+                      <span>
+                        Rahbar: <b>{leaderName}</b>
+                      </span>
                     )}
                   </p>
                 </div>
@@ -669,15 +815,26 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span
                   style={{
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: 700,
                     color: 'var(--accent-blue)',
                     background: 'rgba(59, 130, 246, 0.1)',
-                    padding: '4px 10px',
+                    padding: '6px 12px',
                     borderRadius: 20,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
                   }}
                 >
-                  {isExpanded ? '▲ Yopish' : '▼ Ochish'}
+                  {isExpanded ? (
+                    <>
+                      Yopish <ChevronUp size={14} />
+                    </>
+                  ) : (
+                    <>
+                      Ochish <ChevronDown size={14} />
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -695,24 +852,24 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     marginBottom: 12,
                   }}
                 >
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    👥 Talabalar ro'yxati ({students.length} nafar)
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Users size={16} /> Talabalar ro'yxati ({students.length} nafar)
                   </p>
                   <button
                     className="btn btn-ghost btn-sm"
-                    style={{ color: '#34d399', fontSize: 12, fontWeight: 600 }}
+                    style={{ color: '#34d399', fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExportGroup(group);
                     }}
                   >
-                    📊 Excel (.xlsx) yuklash (Shu guruh)
+                    <FileSpreadsheet size={14} /> Excel (.xlsx) yuklash (Shu guruh)
                   </button>
                 </div>
 
                 {isLoading ? (
                   <div style={{ textAlign: 'center', padding: 24 }}>
-                    <div className="spinner" style={{ margin: '0 auto' }} />
+                    <Loader2 className="spinner-icon" size={28} style={{ margin: '0 auto', color: '#38bdf8' }} />
                   </div>
                 ) : students.length === 0 ? (
                   <p
@@ -795,7 +952,7 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 }
 
 // ============================================================
-// Group Card
+// Group Card Component
 // ============================================================
 function GroupCard({
   group,
@@ -815,64 +972,86 @@ function GroupCard({
     ? `${group.leader.first_name} ${group.leader.last_name}`.trim()
     : null;
 
+  const renderGroupIcon = () => {
+    if (group.code === 'AKADEMIK') return <GraduationCap size={22} />;
+    if (group.code === 'CHIQARILGAN') return <Ban size={22} />;
+    return <BookOpen size={22} />;
+  };
+
   return (
-    <div className="card">
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          marginBottom: isStatusGroup ? 14 : 12,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            marginBottom: isStatusGroup ? 14 : 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              className="avatar"
+              style={{
+                background: isStatusGroup
+                  ? group.code === 'AKADEMIK'
+                    ? 'linear-gradient(135deg, #0284c7, #38bdf8)'
+                    : 'linear-gradient(135deg, #e11d48, #fb7185)'
+                  : 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+              }}
+            >
+              {renderGroupIcon()}
+            </div>
+            <div>
+              <h3 style={{ fontWeight: 700, fontSize: 16 }}>{group.name}</h3>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{group.code}</p>
+            </div>
+          </div>
+          {isStatusGroup ? (
+            <span className="badge badge-blue" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Bookmark size={12} /> Maxsus status
+            </span>
+          ) : (
+            <span className={`badge ${group.leader_id ? 'badge-green' : 'badge-yellow'}`}>
+              {group.leader_id ? "✓ Rahbar bor" : '⏳ Kutilmoqda'}
+            </span>
+          )}
+        </div>
+
+        {/* Leader Info (Only for active academic groups) */}
+        {!isStatusGroup && (
           <div
-            className="avatar"
             style={{
-              background: isStatusGroup
-                ? 'linear-gradient(135deg, #475569, #64748b)'
-                : 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+              background: leaderName ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
+              border: leaderName
+                ? '1px solid rgba(16,185,129,0.2)'
+                : '1px solid rgba(245,158,11,0.2)',
+              borderRadius: 10,
+              padding: '10px 14px',
+              marginBottom: 12,
             }}
           >
-            {group.name.charAt(0)}
+            <p style={{ fontSize: 11, color: leaderName ? '#34d399' : '#fbbf24', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <UserCheck size={13} /> GURUH RAHBARI:
+            </p>
+            <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#fff' }}>
+              {leaderName || 'Rahbar tayinlanmagan'}
+            </p>
           </div>
-          <div>
-            <h3 style={{ fontWeight: 700, fontSize: 16 }}>{group.name}</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{group.code}</p>
-          </div>
-        </div>
-        {isStatusGroup ? (
-          <span className="badge badge-blue">📌 Maxsus status</span>
-        ) : (
-          <span className={`badge ${group.leader_id ? 'badge-green' : 'badge-yellow'}`}>
-            {group.leader_id ? '✓ Rahbar bor' : '⏳ Kutilmoqda'}
-          </span>
         )}
       </div>
 
-      {/* Leader Info (Only for active academic groups) */}
-      {!isStatusGroup && (
-        <div
-          style={{
-            background: leaderName ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
-            border: leaderName ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(245,158,11,0.2)',
-            borderRadius: 10,
-            padding: '10px 14px',
-            marginBottom: 12,
-          }}
+      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <button
+          className="btn btn-ghost btn-sm"
+          style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+          onClick={onViewDetail}
         >
-          <p style={{ fontSize: 11, color: leaderName ? '#34d399' : '#fbbf24', fontWeight: 600 }}>
-            GURUH RAHBARI:
-          </p>
-          <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#fff' }}>
-            {leaderName || 'Rahbar tayinlanmagan'}
-          </p>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={onViewDetail}>
-          👥 Boshqarish
+          <Sliders size={15} /> Boshqarish
         </button>
         {!isStatusGroup && (
           <button
@@ -880,7 +1059,7 @@ function GroupCard({
             style={{ padding: '6px 12px' }}
             onClick={onDelete}
           >
-            🗑️
+            <Trash2 size={16} />
           </button>
         )}
       </div>
@@ -1008,14 +1187,14 @@ function GroupDetailModal({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 28 }}>📚</span>
+            <BookOpen size={28} style={{ color: '#38bdf8' }} />
             <div>
               <h2 style={{ fontSize: 22, fontWeight: 800 }}>{group.name} Boshqaruvi</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Guruh kodi: {group.code}</p>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -1037,8 +1216,8 @@ function GroupDetailModal({
               padding: 14,
             }}
           >
-            <label className="form-label" style={{ marginBottom: 6 }}>
-              ✏️ Guruh Nomi (To'liq o'zgartirish)
+            <label className="form-label" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Edit3 size={15} /> Guruh Nomi (To'liq o'zgartirish)
             </label>
             <form onSubmit={handleSaveGroupName} style={{ display: 'flex', gap: 8 }}>
               <input
@@ -1048,8 +1227,8 @@ function GroupDetailModal({
                 onChange={(e) => setGroupNameInput(e.target.value)}
                 placeholder="Guruh nomi"
               />
-              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingGroupName}>
-                {updatingGroupName ? '⏳' : '✓ Saqlash'}
+              <button type="submit" className="btn btn-primary btn-sm" disabled={updatingGroupName} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                {updatingGroupName ? <Loader2 className="spinner-icon" size={14} /> : <Check size={14} />} Saqlash
               </button>
             </form>
           </div>
@@ -1064,8 +1243,8 @@ function GroupDetailModal({
                 padding: 14,
               }}
             >
-              <label className="form-label" style={{ marginBottom: 6 }}>
-                👨‍🏫 Guruh Rahbari (F.I.Sh)
+              <label className="form-label" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <UserCheck size={15} /> Guruh Rahbari (F.I.Sh)
               </label>
               <form onSubmit={handleSaveLeaderName} style={{ display: 'flex', gap: 8 }}>
                 <input
@@ -1075,8 +1254,8 @@ function GroupDetailModal({
                   value={leaderNameInput}
                   onChange={(e) => setLeaderNameInput(e.target.value)}
                 />
-                <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader}>
-                  {updatingLeader ? '⏳' : '✓ Saqlash'}
+                <button type="submit" className="btn btn-primary btn-sm" disabled={updatingLeader} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  {updatingLeader ? <Loader2 className="spinner-icon" size={14} /> : <Check size={14} />} Saqlash
                 </button>
               </form>
             </div>
@@ -1100,14 +1279,16 @@ function GroupDetailModal({
                   marginBottom: 4,
                 }}
               >
-                <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>🔑 LOGIN KOD</p>
+                <p style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Key size={13} /> LOGIN KOD
+                </p>
                 <button
                   className="btn btn-ghost btn-sm"
-                  style={{ fontSize: 10, color: 'var(--accent-red)' }}
+                  style={{ fontSize: 10, color: 'var(--accent-red)', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   onClick={regenerateCode}
                   disabled={regenerating}
                 >
-                  🔄 Yangilash
+                  <RefreshCw size={12} /> Yangilash
                 </button>
               </div>
 
@@ -1133,10 +1314,21 @@ function GroupDetailModal({
                     color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
                     border: 'none',
                     fontSize: 12,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
                   }}
                   onClick={() => onCopy(group.login_code)}
                 >
-                  {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
+                  {copiedCode === group.login_code ? (
+                    <>
+                      <Check size={14} /> Nusxalandi
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} /> Nusxala
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -1153,17 +1345,17 @@ function GroupDetailModal({
               marginBottom: 12,
             }}
           >
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-              👥 Guruh Talabalari ({students.length} nafar)
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={18} style={{ color: '#38bdf8' }} /> Guruh Talabalari ({students.length} nafar)
             </h3>
-            <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)}>
-              ＋ Talaba Qo'shish
+            <button className="btn btn-primary btn-sm" onClick={() => setShowAddStudent(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Plus size={16} /> Talaba Qo'shish
             </button>
           </div>
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 30 }}>
-              <div className="spinner" style={{ margin: '0 auto' }} />
+              <Loader2 className="spinner-icon" size={32} style={{ margin: '0 auto', color: '#38bdf8' }} />
             </div>
           ) : students.length === 0 ? (
             <div
@@ -1177,7 +1369,7 @@ function GroupDetailModal({
                 border: '1px dashed var(--border)',
               }}
             >
-              Ushbu guruhda hali talabalar yo'q. "＋ Talaba Qo'shish" tugmasi orqali kiriting.
+              Ushbu guruhda hali talabalar yo'q. "Talaba Qo'shish" tugmasi orqali kiriting.
             </div>
           ) : (
             <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid var(--border)' }}>
@@ -1225,10 +1417,13 @@ function GroupDetailModal({
                             fontWeight: 600,
                             padding: '6px 12px',
                             borderRadius: 8,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
                           }}
                           onClick={() => setTransferringStudent(s)}
                         >
-                          ⇄ Boshqa guruhga ko'chirish
+                          <ArrowRightLeft size={14} /> Boshqa guruhga ko'chirish
                         </button>
                       </td>
                     </tr>
@@ -1270,7 +1465,7 @@ function GroupDetailModal({
 }
 
 // ============================================================
-// Transfer Student Modal (Move to another group / Academic leave / Expelled)
+// Transfer Student Modal
 // ============================================================
 function TransferStudentModal({
   student,
@@ -1335,9 +1530,11 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>⇄ Talabani Ko'chirish</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ArrowRightLeft size={20} style={{ color: '#38bdf8' }} /> Talabani Ko'chirish
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -1350,10 +1547,10 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
-            👤 <b>{fullName}</b>
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <UserIcon size={16} /> <b>{fullName}</b>
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
             Talaba tizimdan o'chib ketmaydi, faqatgina tanlangan yangi guruhga ko'chiriladi.
           </p>
         </div>
@@ -1415,7 +1612,11 @@ function TransferStudentModal({
             </select>
           </div>
 
-          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
@@ -1424,10 +1625,18 @@ function TransferStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ flex: 2 }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving || !selectedGroupId}
             >
-              {saving ? "⏳ O'tkazilmoqda..." : "✓ O'tkazish"}
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> O'tkazilmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> O'tkazish
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -1437,7 +1646,7 @@ function TransferStudentModal({
 }
 
 // ============================================================
-// Add Group Modal with Leader Name Field
+// Add Group Modal
 // ============================================================
 function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [form, setForm] = useState({
@@ -1485,9 +1694,11 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             marginBottom: 20,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>📚 Yangi Guruh</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen size={20} style={{ color: '#38bdf8' }} /> Yangi Guruh
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -1512,7 +1723,7 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             />
           </div>
           <div className="form-group">
-            <label className="form-label">👨‍🏫 Guruh Rahbarining Ism va Familiyasi</label>
+            <label className="form-label">Guruh Rahbarining Ism va Familiyasi</label>
             <input
               className="input"
               placeholder="Masalan: Sardor Aliyev"
@@ -1521,13 +1732,30 @@ function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             />
           </div>
 
-          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
               Bekor
             </button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={saving}>
-              {saving ? '⏳ Saqlanmoqda...' : '✓ Yaratish'}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Yaratish
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -1617,9 +1845,11 @@ function AddStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>👤 Talaba Qo'shish</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <UserPlus size={20} style={{ color: '#38bdf8' }} /> Talaba Qo'shish
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -1637,18 +1867,18 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('single')}
           >
-            👤 Bittalab
+            <UserIcon size={15} /> Bittalab
           </button>
           <button
             type="button"
             className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('bulk')}
           >
-            📋 Ro'yxat bo'yicha (Ko'plab)
+            <ListPlus size={15} /> Ro'yxat bo'yicha
           </button>
         </div>
 
@@ -1679,19 +1909,36 @@ function AddStudentModal({
                 autoFocus
               />
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                💡 Har bir qatorga yangi talabaning Familiya va Ismini yozing.
+                Har bir qatorga yangi talabaning Familiya va Ismini yozing.
               </p>
             </div>
           )}
 
-          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
               Bekor
             </button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={saving}>
-              {saving ? '⏳ Saqlanmoqda...' : "✓ Qo'shish"}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Qo'shish
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -1704,10 +1951,15 @@ function AddStudentModal({
 // Stats View
 // ============================================================
 function StatsView({ groups }: { groups: Group[] }) {
+  const academicGroups = groups.filter((g) => g.code !== 'AKADEMIK' && g.code !== 'CHIQARILGAN');
+  const statusGroups = groups.filter((g) => g.code === 'AKADEMIK' || g.code === 'CHIQARILGAN');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="card">
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>📊 Tizim Statistikasi</h3>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BarChart3 size={20} style={{ color: '#38bdf8' }} /> Tizim Statistikasi
+        </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div
             style={{
@@ -1728,15 +1980,26 @@ function StatsView({ groups }: { groups: Group[] }) {
               borderBottom: '1px solid var(--border)',
             }}
           >
+            <span style={{ color: 'var(--text-secondary)' }}>O'quv guruhlari</span>
+            <span style={{ fontWeight: 700, color: '#38bdf8' }}>{academicGroups.length} ta</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '10px 0',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
             <span style={{ color: 'var(--text-secondary)' }}>Biriktirilgan rahbarlar</span>
             <span style={{ fontWeight: 700, color: '#34d399' }}>
-              {groups.filter((g) => g.leader_id).length} nafar
+              {academicGroups.filter((g) => g.leader_id).length} nafar
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Kutilayotgan guruhlar</span>
-            <span style={{ fontWeight: 700, color: '#a78bfa' }}>
-              {groups.filter((g) => !g.leader_id).length} ta
+            <span style={{ color: 'var(--text-secondary)' }}>Maxsus status guruhlari</span>
+            <span style={{ fontWeight: 700, color: '#fbbf24' }}>
+              {statusGroups.length} ta
             </span>
           </div>
         </div>

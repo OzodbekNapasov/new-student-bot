@@ -6,6 +6,7 @@ import { getTelegramUser, expandTelegramApp } from '@/lib/telegramAuth';
 import AdminPanel from '@/components/AdminPanel';
 import GroupLeaderPanel from '@/components/GroupLeaderPanel';
 import StudentPanel from '@/components/StudentPanel';
+import { Key, LogIn, AlertTriangle, Send, Loader2 } from 'lucide-react';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -90,7 +91,6 @@ export default function Home() {
     if (!loginInput.trim()) return;
 
     const input = loginInput.trim();
-    // If input is digits -> treat as telegram_id; if alphanumeric (6 chars like AB3K7Z) -> treat as login_code
     if (/^\d+$/.test(input)) {
       await performLogin({ telegram_id: input, first_name: 'Foydalanuvchi' });
     } else {
@@ -108,10 +108,11 @@ export default function Home() {
           justifyContent: 'center',
           minHeight: '100vh',
           gap: 16,
+          background: 'var(--bg-primary)',
         }}
       >
-        <div className="spinner" style={{ width: 48, height: 48 }} />
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Tizimga kirilmoqda...</p>
+        <Loader2 className="spinner-icon" size={44} style={{ color: '#38bdf8' }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tizimga kirilmoqda...</p>
       </div>
     );
   }
@@ -142,7 +143,22 @@ export default function Home() {
             boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
           }}
         >
-          <div style={{ fontSize: 56, marginBottom: 12 }}>🔑</div>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 20,
+              background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              color: '#fff',
+              boxShadow: '0 8px 20px rgba(56, 189, 248, 0.3)',
+            }}
+          >
+            <Key size={32} />
+          </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: '#fff' }}>
             Tizimga Kirish
           </h2>
@@ -179,7 +195,9 @@ export default function Home() {
             />
 
             {loginError && (
-              <p style={{ color: '#ef4444', fontSize: 13, margin: 0 }}>⚠️ {loginError}</p>
+              <p style={{ color: '#ef4444', fontSize: 13, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <AlertTriangle size={16} /> {loginError}
+              </p>
             )}
 
             <button
@@ -196,9 +214,21 @@ export default function Home() {
                 fontSize: 15,
                 cursor: 'pointer',
                 boxShadow: '0 8px 20px rgba(0, 180, 255, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
               }}
             >
-              {authenticating ? '⏳ Kirilmoqda...' : 'Kirish →'}
+              {authenticating ? (
+                <>
+                  <Loader2 className="spinner-icon" size={18} /> Kirilmoqda...
+                </>
+              ) : (
+                <>
+                  Kirish <LogIn size={18} />
+                </>
+              )}
             </button>
           </form>
 
@@ -207,9 +237,9 @@ export default function Home() {
           >
             <a
               href="https://t.me/new_students_shtt_bot"
-              style={{ color: '#38bdf8', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}
+              style={{ color: '#38bdf8', fontSize: 13, textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              📱 Botga O'tish (@new_students_shtt_bot)
+              <Send size={15} /> Botga O'tish (@new_students_shtt_bot)
             </a>
           </div>
         </div>

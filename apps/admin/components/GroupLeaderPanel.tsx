@@ -2,6 +2,25 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { User, Group, Student } from '@/lib/types';
+import {
+  UserCheck,
+  BookOpen,
+  LogOut,
+  Users,
+  Plus,
+  RefreshCw,
+  User as UserIcon,
+  ArrowRightLeft,
+  X,
+  UserPlus,
+  ListPlus,
+  Check,
+  Loader2,
+  AlertTriangle,
+  FileText,
+  ShieldAlert,
+  Inbox,
+} from 'lucide-react';
 
 interface Props {
   user: User;
@@ -55,10 +74,11 @@ export default function GroupLeaderPanel({ user }: Props) {
           justifyContent: 'center',
           minHeight: '100vh',
           gap: 16,
+          background: 'var(--bg-primary)',
         }}
       >
-        <div className="spinner" style={{ width: 48, height: 48 }} />
-        <p style={{ color: 'var(--text-secondary)' }}>Guruh ma'lumotlari yuklanmoqda...</p>
+        <Loader2 className="spinner-icon" size={44} style={{ color: '#38bdf8' }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Guruh ma'lumotlari yuklanmoqda...</p>
       </div>
     );
   }
@@ -74,17 +94,18 @@ export default function GroupLeaderPanel({ user }: Props) {
           minHeight: '100vh',
           gap: 16,
           padding: 24,
+          background: 'var(--bg-primary)',
         }}
       >
-        <span style={{ fontSize: 56 }}>📭</span>
+        <Inbox size={56} style={{ color: 'var(--text-muted)' }} />
         <h2 style={{ fontSize: 20, fontWeight: 700, textAlign: 'center' }}>
           Guruh biriktirilmagan
         </h2>
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: 14 }}>
           Admin sizga guruh biriktirishi kerak. Admin bilan bog'laning.
         </p>
-        <button className="btn btn-ghost" onClick={fetchMyGroup}>
-          🔄 Yangilash
+        <button className="btn btn-ghost" onClick={fetchMyGroup} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <RefreshCw size={16} /> Yangilash
         </button>
       </div>
     );
@@ -112,9 +133,15 @@ export default function GroupLeaderPanel({ user }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               className="avatar avatar-lg"
-              style={{ background: 'linear-gradient(135deg, #059669, #10b981)', fontSize: 24 }}
+              style={{
+                background: 'linear-gradient(135deg, #059669, #10b981)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+              }}
             >
-              👨‍🏫
+              <UserCheck size={28} />
             </div>
             <div>
               <p
@@ -128,11 +155,11 @@ export default function GroupLeaderPanel({ user }: Props) {
               >
                 Guruh Rahbari
               </p>
-              <h1 style={{ fontSize: 20, fontWeight: 800 }}>
+              <h1 style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>
                 {user.first_name} {user.last_name}
               </h1>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
-                📚 Guruh: <b>{myGroup.name}</b> ({myGroup.code})
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BookOpen size={14} /> Guruh: <b>{myGroup.name}</b> ({myGroup.code})
               </p>
             </div>
           </div>
@@ -142,11 +169,14 @@ export default function GroupLeaderPanel({ user }: Props) {
               background: 'rgba(239, 68, 68, 0.2)',
               color: '#ef4444',
               border: '1px solid rgba(239, 68, 68, 0.4)',
-              padding: '6px 12px',
+              padding: '8px 14px',
               borderRadius: 10,
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: 13,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
             }}
             onClick={() => {
               if (confirm('Hisobdan chiqmoqchimisiz?')) {
@@ -155,7 +185,7 @@ export default function GroupLeaderPanel({ user }: Props) {
               }
             }}
           >
-            🚪 Chiqish
+            <LogOut size={16} /> Chiqish
           </button>
         </div>
       </div>
@@ -183,10 +213,10 @@ export default function GroupLeaderPanel({ user }: Props) {
           </div>
           <button
             className="btn btn-primary"
-            style={{ boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)' }}
+            style={{ boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)', display: 'inline-flex', alignItems: 'center', gap: 6 }}
             onClick={() => setShowAddStudent(true)}
           >
-            ＋ Talaba Qo'shish
+            <Plus size={18} /> Talaba Qo'shish
           </button>
         </div>
       </div>
@@ -201,12 +231,12 @@ export default function GroupLeaderPanel({ user }: Props) {
             marginBottom: 14,
           }}
         >
-          <h3 style={{ fontSize: 17, fontWeight: 700 }}>
-            👥 Guruh Talabalari Ro'yxati{' '}
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>(Familiya Ism Sharif)</span>
+          <h3 style={{ fontSize: 17, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Users size={20} style={{ color: '#38bdf8' }} /> Guruh Talabalari Ro'yxati{' '}
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}>(Familiya Ism Sharif)</span>
           </h3>
-          <button className="btn btn-ghost btn-sm" onClick={fetchMyGroup}>
-            🔄 Yangilash
+          <button className="btn btn-ghost btn-sm" onClick={fetchMyGroup} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <RefreshCw size={14} /> Yangilash
           </button>
         </div>
 
@@ -221,10 +251,12 @@ export default function GroupLeaderPanel({ user }: Props) {
               border: '1px dashed var(--border)',
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 12 }}>👤</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+              <UserIcon size={48} style={{ color: 'var(--text-muted)' }} />
+            </div>
             <p style={{ fontWeight: 600, marginBottom: 6 }}>Guruhda talabalar yo'q</p>
             <p style={{ fontSize: 13 }}>
-              Yuqoridagi "＋ Talaba Qo'shish" tugmasi orqali talaba qo'shing.
+              Yuqoridagi "Talaba Qo'shish" tugmasi orqali talaba qo'shing.
             </p>
           </div>
         ) : (
@@ -275,10 +307,13 @@ export default function GroupLeaderPanel({ user }: Props) {
                             fontWeight: 600,
                             padding: '6px 12px',
                             borderRadius: 8,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
                           }}
                           onClick={() => setTransferringStudent(s)}
                         >
-                          ⇄ Boshqa guruhga ko'chirish
+                          <ArrowRightLeft size={14} /> Boshqa guruhga ko'chirish
                         </button>
                       </td>
                     </tr>
@@ -400,9 +435,11 @@ function AddStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>👤 Talaba Qo'shish</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <UserPlus size={20} style={{ color: '#38bdf8' }} /> Talaba Qo'shish
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -420,18 +457,18 @@ function AddStudentModal({
           <button
             type="button"
             className={`btn btn-sm ${mode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('single')}
           >
-            👤 Bittalab
+            <UserIcon size={15} /> Bittalab
           </button>
           <button
             type="button"
             className={`btn btn-sm ${mode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ flex: 1, borderRadius: 8, fontSize: 13 }}
+            style={{ flex: 1, borderRadius: 8, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => setMode('bulk')}
           >
-            📋 Ro'yxat bo'yicha (Ko'plab)
+            <ListPlus size={15} /> Ro'yxat bo'yicha
           </button>
         </div>
 
@@ -462,19 +499,36 @@ function AddStudentModal({
                 autoFocus
               />
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                💡 Har bir qatorga yangi talabaning Familiya va Ismini yozing.
+                Har bir qatorga yangi talabaning Familiya va Ismini yozing.
               </p>
             </div>
           )}
 
-          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
               Bekor
             </button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={saving}>
-              {saving ? '⏳ Saqlanmoqda...' : "✓ Qo'shish"}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Qo'shish
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -549,9 +603,11 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>⇄ Talabani Ko'chirish</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ArrowRightLeft size={20} style={{ color: '#38bdf8' }} /> Talabani Ko'chirish
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -564,10 +620,10 @@ function TransferStudentModal({
             marginBottom: 16,
           }}
         >
-          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
-            👤 <b>{fullName}</b>
+          <p style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <UserIcon size={16} /> <b>{fullName}</b>
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
             Talaba tizimdan o'chib ketmaydi, faqatgina tanlangan yangi guruhga ko'chiriladi.
           </p>
         </div>
@@ -629,7 +685,11 @@ function TransferStudentModal({
             </select>
           </div>
 
-          {err && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: 'var(--accent-red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AlertTriangle size={16} /> {err}
+            </p>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>
@@ -638,10 +698,18 @@ function TransferStudentModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ flex: 2 }}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               disabled={saving || !selectedGroupId}
             >
-              {saving ? "⏳ O'tkazilmoqda..." : "✓ O'tkazish"}
+              {saving ? (
+                <>
+                  <Loader2 className="spinner-icon" size={16} /> O'tkazilmoqda...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> O'tkazish
+                </>
+              )}
             </button>
           </div>
         </form>
