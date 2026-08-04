@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  telegramId   String?  @unique
+  username     String?
+  firstName    String
+  lastName     String?
+  phone        String?  @unique
+  email        String?  @unique
+  password     String?
+  role         String   @default("STUDENT") // SUPER_ADMIN, GROUP_LEADER, STUDENT
+  status       String   @default("ACTIVE")  // ACTIVE, INACTIVE, BLOCKED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  managedGroups    Group[]        @relation("GroupLeader")
+  studentProfile   Student?       @relation("UserStudent")
+  markedAttendance Attendance[]   @relation("MarkedBy")
+  createdTasks     Task[]         @relation("CreatedBy")
+  notifications    Notification[] @relation("UserNotifications")
+  sessions         Session[]
+  loginHistory     LoginHistory[]
+  activityLogs     ActivityLog[]
+}
+
+model Group {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  code         String   @unique
+  faculty      String?
+  academicYear Int      @default(2024)
+  leaderId     String?
+  leader       User?    @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  // Relations
+  students    Student[]
+  attendances Attendance[]
+  tasks       Task[]
+}
+
+model Student {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
+  groupId           String
+  group             Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  studentCardNumber String?   @unique
+  passport          String?   @unique
+  gender            String?   // MALE, FEMALE
+  birthDate         DateTime?
+  status            String    @default("ACTIVE") // ACTIVE, EXPELLED, GRADUATED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  attendances Attendance[]
+  submissions Submission[]
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  date       String   // YYYY-MM-DD format
+  status     String   @default("PRESENT") // PRESENT, ABSENT, EXCUSED
+  markedById String
+  markedBy   User     @relation("MarkedBy", fields: [markedById], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([studentId, date])
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  dueDate     DateTime
+  createdById String
+  createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  submissions Submission[]
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  content   String
+  fileUrl   String?
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  grade     Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([taskId, studentId])
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String   @unique
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+}
+
+model LoginHistory {
+  id            String   @id @default(uuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  telegramId    String?
+  ipAddress     String?
+  userAgent     String?
+  authMethod    String   // TELEGRAM_INITDATA, PASSWORD, REFRESH_TOKEN
+  status        String   // SUCCESS, FAILED, BLOCKED
+  failureReason String?
+  createdAt     DateTime @default(now())
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityName String
+  entityId   String?
+  oldValues  String?  // JSON string
+  newValues  String?  // JSON string
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String
+  recipient   User     @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        String   @default("INFO") // INFO, ATTENDANCE_ALERT, TASK_DUE, SYSTEM
+  isRead      Boolean  @default(false)
+  sentViaBot  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

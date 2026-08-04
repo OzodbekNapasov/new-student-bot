@@ -1,0 +1,42 @@
+{
+  "name": "student-management-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Student Management Platform Monorepo (Next.js 15 + NestJS + Prisma Neon Postgres + Telegram WebApp)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev --workspace=@smp/backend",
+    "dev:frontend": "npm run dev --workspace=@smp/frontend",
+    "dev:admin": "npm run dev --workspace=@smp/admin",
+    "build:common": "npm run build --workspace=@smp/common",
+    "build:backend": "npm run build --workspace=@smp/backend",
+    "build:frontend": "npm run build --workspace=@smp/frontend",
+    "build:admin": "npm run build --workspace=@smp/admin",
+    "build": "npm run build:common && npm run build --workspaces",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "eslint . --ext .ts,.tsx",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.2"
+  },
+  "keywords": [
+    "nextjs15",
+    "nestjs",
+    "prisma",
+    "neon-postgres",
+    "telegram-bot",
+    "telegram-webapp",
+    "monorepo"
+  ],
+  "author": "Senior Architecture Team",
+  "license": "MIT"
+}
