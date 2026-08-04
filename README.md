@@ -37,16 +37,19 @@ student-management-platform/
 ## ⚙️ Quick Start (Local Development)
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Configure Environment
+
 ```bash
 cp .env.example .env
 ```
 
 ### 3. Setup Database (Neon PostgreSQL)
+
 ```bash
 cd apps/backend
 npx prisma db push
@@ -54,6 +57,7 @@ npm run seed
 ```
 
 ### 4. Run Development Servers
+
 - **Backend (NestJS API)**: `npm run dev:backend` (runs on http://localhost:5000)
 - **Frontend (Next.js 15)**: `npm run dev:frontend` (runs on http://localhost:3000)
 
@@ -61,8 +65,8 @@ npm run seed
 
 ## 🔑 Pre-seeded Test Accounts
 
-| Role | Email / Telegram ID | Password / Credentials |
-| :--- | :--- | :--- |
-| **Super Admin** | `admin@student.uz` | `admin123` |
-| **Group Leader (CS-101)** | `rahbar1@student.uz` | `leader123` |
+| Role                      | Email / Telegram ID   | Password / Credentials       |
+| :------------------------ | :-------------------- | :--------------------------- |
+| **Super Admin**           | `admin@student.uz`    | `admin123`                   |
+| **Group Leader (CS-101)** | `rahbar1@student.uz`  | `leader123`                  |
 | **Student (Ali Valiyev)** | Telegram ID: `300001` | Telegram `initData` / WebApp |

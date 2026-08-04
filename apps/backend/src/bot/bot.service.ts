@@ -16,8 +16,10 @@ export class BotService implements OnModuleInit {
     private readonly studentRepository: StudentRepository,
   ) {
     const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-    this.webAppUrl = this.configService.get<string>('TELEGRAM_WEBAPP_URL') || 'https://new-student-bot-admin.vercel.app';
-    
+    this.webAppUrl =
+      this.configService.get<string>('TELEGRAM_WEBAPP_URL') ||
+      'https://new-student-bot-admin.vercel.app';
+
     if (token) {
       this.bot = new Telegraf(token);
     } else {
@@ -37,7 +39,7 @@ export class BotService implements OnModuleInit {
     this.bot.start(async (ctx) => {
       const telegramId = ctx.from?.id.toString();
       const firstName = ctx.from?.first_name || 'Foydalanuvchi';
-      
+
       let user = await this.userRepository.findByTelegramId(telegramId);
 
       if (!user) {
@@ -66,9 +68,9 @@ export class BotService implements OnModuleInit {
     this.bot.help((ctx) => {
       ctx.reply(
         'ℹ️ *Yordam va Buyruqlar*:\n\n' +
-        '/start - Botni qayta ishga tushirish va menyu\n' +
-        '/dashboard - WebApp platformasini ochish\n' +
-        '/my_stats - Mening shaxsiy davomatim',
+          '/start - Botni qayta ishga tushirish va menyu\n' +
+          '/dashboard - WebApp platformasini ochish\n' +
+          '/my_stats - Mening shaxsiy davomatim',
         { parse_mode: 'Markdown' },
       );
     });
@@ -95,7 +97,7 @@ export class BotService implements OnModuleInit {
     if (role === 'GROUP_LEADER') {
       return Markup.keyboard([
         [Markup.button.webApp('📋 Bugungi Davomat (1-Click)', `${this.webAppUrl}?view=attendance`)],
-        ['📊 Guruh Statistikasi', '👤 Talabalar Ro\'yxati'],
+        ['📊 Guruh Statistikasi', "👤 Talabalar Ro'yxati"],
       ]).resize();
     }
 

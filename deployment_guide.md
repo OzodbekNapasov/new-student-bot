@@ -1,4 +1,5 @@
 # Production Deployment Guide
+
 ## Student Management Platform
 
 Step-by-step production deployment guide for launching the **Student Management Platform** using Docker Compose, PostgreSQL + PgBouncer, Redis, Nginx Reverse Proxy, and SSL certificates.
@@ -21,6 +22,7 @@ Before deploying to your cloud VPS (Ubuntu 22.04 LTS / Debian 12 recommended):
 ## 2. One-Command Production Launch
 
 ### Step 1: Clone Repository & Configure Environment
+
 ```bash
 git clone https://github.com/your-org/student-management-platform.git
 cd student-management-platform
@@ -30,6 +32,7 @@ cp .env.example .env
 ```
 
 Edit `.env` file and set your production secrets:
+
 ```env
 TELEGRAM_BOT_TOKEN="your_actual_bot_token_from_botfather"
 JWT_SECRET="generate_a_random_32_character_string"
@@ -38,6 +41,7 @@ ADMIN_URL="https://yourdomain.com/admin"
 ```
 
 ### Step 2: Build & Start All Services
+
 Launch the entire platform (PostgreSQL, PgBouncer, Redis, Backend API, Telegram Bot, Mini App, Admin Panel, and Nginx) with a single command:
 
 ```bash
@@ -87,6 +91,7 @@ curl http://localhost/api/v1/health
 ```
 
 Expected Response:
+
 ```json
 {
   "status": "ok",
@@ -99,8 +104,8 @@ Expected Response:
 
 ## 6. Default Admin & Leader Credentials
 
-| Service / Role | URL / Interface | Login Email / ID | Default Password |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `https://yourdomain.com/admin` | `admin@student.uz` | `admin123` |
-| **Group Leader (CS-101)** | `https://yourdomain.com/app` | `rahbar1@student.uz` | `leader123` |
-| **Student** | Telegram Bot (`@your_bot`) | Telegram `initData` | Automatic Auth |
+| Service / Role            | URL / Interface                | Login Email / ID     | Default Password |
+| :------------------------ | :----------------------------- | :------------------- | :--------------- |
+| **Super Admin**           | `https://yourdomain.com/admin` | `admin@student.uz`   | `admin123`       |
+| **Group Leader (CS-101)** | `https://yourdomain.com/app`   | `rahbar1@student.uz` | `leader123`      |
+| **Student**               | Telegram Bot (`@your_bot`)     | Telegram `initData`  | Automatic Auth   |

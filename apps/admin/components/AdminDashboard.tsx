@@ -1,23 +1,84 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, BookOpen, CheckCircle, ShieldAlert, Plus, Search, UserCheck, ArrowUpRight } from 'lucide-react';
+import {
+  Users,
+  BookOpen,
+  CheckCircle,
+  ShieldAlert,
+  Plus,
+  Search,
+  UserCheck,
+  ArrowUpRight,
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'students'>('overview');
 
   const stats = [
-    { title: 'Jami Talabalar', value: '1,248', change: '+12%', icon: Users, color: 'from-blue-600 to-indigo-600' },
-    { title: 'Akademik Guruhlar', value: '42', change: '+3 yangi', icon: BookOpen, color: 'from-emerald-600 to-teal-600' },
-    { title: 'O\'rtacha Davomat', value: '94.2%', change: '+1.5%', icon: CheckCircle, color: 'from-purple-600 to-pink-600' },
-    { title: 'Guruh Rahbarlari', value: '38', change: 'Faol', icon: UserCheck, color: 'from-amber-600 to-orange-600' },
+    {
+      title: 'Jami Talabalar',
+      value: '1,248',
+      change: '+12%',
+      icon: Users,
+      color: 'from-blue-600 to-indigo-600',
+    },
+    {
+      title: 'Akademik Guruhlar',
+      value: '42',
+      change: '+3 yangi',
+      icon: BookOpen,
+      color: 'from-emerald-600 to-teal-600',
+    },
+    {
+      title: "O'rtacha Davomat",
+      value: '94.2%',
+      change: '+1.5%',
+      icon: CheckCircle,
+      color: 'from-purple-600 to-pink-600',
+    },
+    {
+      title: 'Guruh Rahbarlari',
+      value: '38',
+      change: 'Faol',
+      icon: UserCheck,
+      color: 'from-amber-600 to-orange-600',
+    },
   ];
 
   const groups = [
-    { id: '1', name: 'Kompyuter Ilmlari 101', code: 'CS-101', faculty: 'Axborot Texnologiyalari', leader: 'Jasur Bekmurodov', count: 32 },
-    { id: '2', name: 'Dasturiy Muhandislik 202', code: 'SE-202', faculty: 'Axborot Texnologiyalari', leader: 'Malika Raximova', count: 28 },
-    { id: '3', name: 'Kiberxavfsizlik 301', code: 'CS-301', faculty: 'Kiberxavfsizlik', leader: 'Sardor Qodirov', count: 25 },
-    { id: '4', name: 'Sun\'iy Intelekt 401', code: 'AI-401', faculty: 'Sun\'iy Intelekt', leader: 'Otabek Xolmatov', count: 30 },
+    {
+      id: '1',
+      name: 'Kompyuter Ilmlari 101',
+      code: 'CS-101',
+      faculty: 'Axborot Texnologiyalari',
+      leader: 'Jasur Bekmurodov',
+      count: 32,
+    },
+    {
+      id: '2',
+      name: 'Dasturiy Muhandislik 202',
+      code: 'SE-202',
+      faculty: 'Axborot Texnologiyalari',
+      leader: 'Malika Raximova',
+      count: 28,
+    },
+    {
+      id: '3',
+      name: 'Kiberxavfsizlik 301',
+      code: 'CS-301',
+      faculty: 'Kiberxavfsizlik',
+      leader: 'Sardor Qodirov',
+      count: 25,
+    },
+    {
+      id: '4',
+      name: "Sun'iy Intelekt 401",
+      code: 'AI-401',
+      faculty: "Sun'iy Intelekt",
+      leader: 'Otabek Xolmatov',
+      count: 30,
+    },
   ];
 
   return (
@@ -89,10 +150,17 @@ export default function AdminDashboard() {
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
-              <div key={idx} className="glass-card p-6 rounded-2xl border border-slate-800 space-y-3">
+              <div
+                key={idx}
+                className="glass-card p-6 rounded-2xl border border-slate-800 space-y-3"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{stat.title}</span>
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${stat.color} flex items-center justify-center text-white shadow-md`}>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {stat.title}
+                  </span>
+                  <div
+                    className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${stat.color} flex items-center justify-center text-white shadow-md`}
+                  >
                     <Icon className="w-5 h-5" />
                   </div>
                 </div>
@@ -113,7 +181,9 @@ export default function AdminDashboard() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-white">Akademik Guruhlar Ro'yxati</h3>
-                <p className="text-xs text-slate-400">Platformadagi barcha mavjud guruhlar va tayinlangan guruh rahbarlari</p>
+                <p className="text-xs text-slate-400">
+                  Platformadagi barcha mavjud guruhlar va tayinlangan guruh rahbarlari
+                </p>
               </div>
 
               <button className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-sm text-white shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all">

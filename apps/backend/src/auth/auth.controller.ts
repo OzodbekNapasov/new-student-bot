@@ -10,7 +10,9 @@ export class AuthController {
 
   @Post('telegram')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Authenticate student or group leader via Telegram WebApp initData HMAC' })
+  @ApiOperation({
+    summary: 'Authenticate student or group leader via Telegram WebApp initData HMAC',
+  })
   @ApiResponse({ status: 200, description: 'Successful authentication' })
   async authenticateTelegram(@Body() dto: TelegramAuthDto) {
     return this.authService.validateTelegramAuth(dto.initData);

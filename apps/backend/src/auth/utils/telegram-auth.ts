@@ -9,10 +9,7 @@ export interface TelegramUser {
   is_premium?: boolean;
 }
 
-export function verifyTelegramWebAppData(
-  initData: string,
-  botToken: string,
-): TelegramUser | null {
+export function verifyTelegramWebAppData(initData: string, botToken: string): TelegramUser | null {
   try {
     const urlParams = new URLSearchParams(initData);
     const hash = urlParams.get('hash');
@@ -29,10 +26,7 @@ export function verifyTelegramWebAppData(
 
     const dataCheckString = params.join('\n');
 
-    const secretKey = crypto
-      .createHmac('sha256', 'WebAppData')
-      .update(botToken)
-      .digest();
+    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
 
     const calculatedHash = crypto
       .createHmac('sha256', secretKey)

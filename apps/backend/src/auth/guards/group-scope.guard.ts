@@ -27,7 +27,9 @@ export class GroupScopeGuard implements CanActivate {
     if (user.role === 'GROUP_LEADER') {
       const group = await this.groupRepository.findById(groupId);
       if (!group || group.leaderId !== user.sub) {
-        throw new ForbiddenException('Group Leader is restricted to managing their assigned group only');
+        throw new ForbiddenException(
+          'Group Leader is restricted to managing their assigned group only',
+        );
       }
     }
 

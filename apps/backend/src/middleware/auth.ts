@@ -21,7 +21,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-change-in-pro
 export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Authorization header missing or invalid format' });
+    return res
+      .status(401)
+      .json({ success: false, message: 'Authorization header missing or invalid format' });
   }
 
   const token = authHeader.split(' ')[1];

@@ -11,7 +11,9 @@ export async function getLeaderGroups(req: AuthRequest, res: Response) {
       include: {
         students: {
           include: {
-            user: { select: { id: true, firstName: true, lastName: true, phone: true, telegramId: true } },
+            user: {
+              select: { id: true, firstName: true, lastName: true, phone: true, telegramId: true },
+            },
           },
         },
         _count: { select: { tasks: true } },
@@ -35,14 +37,25 @@ export async function getGroupStudents(req: AuthRequest, res: Response) {
         where: { id: groupId, leaderId },
       });
       if (!group) {
-        return res.status(403).json({ success: false, message: 'Access denied: You do not manage this group' });
+        return res
+          .status(403)
+          .json({ success: false, message: 'Access denied: You do not manage this group' });
       }
     }
 
     const students = await prisma.student.findMany({
       where: { groupId },
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, phone: true, telegramId: true, username: true } },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            telegramId: true,
+            username: true,
+          },
+        },
         attendances: {
           take: 30,
           orderBy: { date: 'desc' },
@@ -63,7 +76,9 @@ export async function markGroupAttendance(req: AuthRequest, res: Response) {
     // records format: [{ studentId: "...", status: "PRESENT" | "ABSENT" | "EXCUSED" }]
 
     if (!groupId || !date || !Array.isArray(records)) {
-      return res.status(400).json({ success: false, message: 'groupId, date, and records array are required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'groupId, date, and records array are required' });
     }
 
     const leaderId = req.user?.id;
@@ -110,7 +125,9 @@ export async function createGroupTask(req: AuthRequest, res: Response) {
   try {
     const { groupId, title, description, dueDate } = req.body;
     if (!groupId || !title || !description || !dueDate) {
-      return res.status(400).json({ success: false, message: 'groupId, title, description, and dueDate required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'groupId, title, description, and dueDate required' });
     }
 
     const leaderId = req.user?.id;

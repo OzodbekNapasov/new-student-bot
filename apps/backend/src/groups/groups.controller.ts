@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto, AssignLeaderDto } from './dto/groups.dto';
@@ -35,10 +25,7 @@ export class GroupsController {
   @ApiOperation({ summary: 'List academic groups with pagination' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
-  async getAllGroups(
-    @Query('page') page = '1',
-    @Query('limit') limit = '20',
-  ) {
+  async getAllGroups(@Query('page') page = '1', @Query('limit') limit = '20') {
     return this.groupsService.getAllGroups(Number(page), Number(limit));
   }
 
@@ -52,20 +39,14 @@ export class GroupsController {
   @Put(':groupId')
   @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Update group details (Super Admin only)' })
-  async updateGroup(
-    @Param('groupId') groupId: string,
-    @Body() dto: UpdateGroupDto,
-  ) {
+  async updateGroup(@Param('groupId') groupId: string, @Body() dto: UpdateGroupDto) {
     return this.groupsService.updateGroup(groupId, dto);
   }
 
   @Put(':groupId/assign-leader')
   @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Assign a Group Leader to group (Super Admin only)' })
-  async assignLeader(
-    @Param('groupId') groupId: string,
-    @Body() dto: AssignLeaderDto,
-  ) {
+  async assignLeader(@Param('groupId') groupId: string, @Body() dto: AssignLeaderDto) {
     return this.groupsService.assignLeader(groupId, dto);
   }
 

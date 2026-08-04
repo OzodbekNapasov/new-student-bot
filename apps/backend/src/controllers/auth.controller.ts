@@ -20,7 +20,9 @@ export async function telegramWebappLogin(req: AuthRequest, res: Response) {
     if (initData) {
       const verified = verifyTelegramInitData(initData, TELEGRAM_BOT_TOKEN);
       if (!verified && process.env.NODE_ENV === 'production') {
-        return res.status(400).json({ success: false, message: 'Invalid Telegram initData signature' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid Telegram initData signature' });
       }
       if (verified?.user) {
         telegramIdStr = verified.user.id.toString();
@@ -35,7 +37,9 @@ export async function telegramWebappLogin(req: AuthRequest, res: Response) {
     }
 
     if (!telegramIdStr) {
-      return res.status(400).json({ success: false, message: 'Telegram User identification required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Telegram User identification required' });
     }
 
     let user = await prisma.user.findUnique({
@@ -90,7 +94,9 @@ export async function telegramWebappLogin(req: AuthRequest, res: Response) {
     });
   } catch (error) {
     console.error('Telegram login error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error during authentication' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal server error during authentication' });
   }
 }
 
@@ -118,7 +124,9 @@ export async function adminLogin(req: AuthRequest, res: Response) {
     }
 
     if (user.role !== 'SUPER_ADMIN' && user.role !== 'GROUP_LEADER') {
-      return res.status(403).json({ success: false, message: 'Access denied. Administrator privileges required.' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Access denied. Administrator privileges required.' });
     }
 
     const payload = {
@@ -145,7 +153,9 @@ export async function adminLogin(req: AuthRequest, res: Response) {
     });
   } catch (error) {
     console.error('Admin login error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error during admin login' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal server error during admin login' });
   }
 }
 

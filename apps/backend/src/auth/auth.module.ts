@@ -13,24 +13,14 @@ import { GroupScopeGuard } from './guards/group-scope.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'super-secret-jwt-key-student-management-2026',
+        secret:
+          configService.get<string>('JWT_SECRET') || 'super-secret-jwt-key-student-management-2026',
         signOptions: { expiresIn: '1h' },
       }),
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtAuthGuard,
-    RolesGuard,
-    GroupScopeGuard,
-  ],
-  exports: [
-    AuthService,
-    JwtAuthGuard,
-    RolesGuard,
-    GroupScopeGuard,
-    JwtModule,
-  ],
+  providers: [AuthService, JwtAuthGuard, RolesGuard, GroupScopeGuard],
+  exports: [AuthService, JwtAuthGuard, RolesGuard, GroupScopeGuard, JwtModule],
 })
 export class AuthModule {}

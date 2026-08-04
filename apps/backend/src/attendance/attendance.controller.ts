@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { BulkAttendanceDto } from './dto/attendance.dto';
@@ -33,10 +24,7 @@ export class AttendanceController {
   @Roles('SUPER_ADMIN', 'GROUP_LEADER')
   @ApiOperation({ summary: 'Get group attendance records for a specific date' })
   @ApiQuery({ name: 'date', required: true, example: '2026-08-04' })
-  async getGroupAttendanceByDate(
-    @Param('groupId') groupId: string,
-    @Query('date') date: string,
-  ) {
+  async getGroupAttendanceByDate(@Param('groupId') groupId: string, @Query('date') date: string) {
     return this.attendanceService.getGroupAttendanceByDate(groupId, date);
   }
 

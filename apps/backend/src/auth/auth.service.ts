@@ -15,7 +15,9 @@ export class AuthService {
   ) {}
 
   async validateTelegramAuth(initData: string) {
-    const botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN') || '8615940322:AAFbjXb3ExmtDMTfjoDoPq9gIWdScsdt3eo';
+    const botToken =
+      this.configService.get<string>('TELEGRAM_BOT_TOKEN') ||
+      '8615940322:AAFbjXb3ExmtDMTfjoDoPq9gIWdScsdt3eo';
     const tgUser = verifyTelegramWebAppData(initData, botToken);
 
     if (!tgUser) {
@@ -59,7 +61,9 @@ export class AuthService {
   async refreshToken(dto: RefreshTokenDto) {
     try {
       const payload = this.jwtService.verify(dto.refreshToken, {
-        secret: this.configService.get<string>('JWT_SECRET') || 'super-secret-jwt-key-student-management-2026',
+        secret:
+          this.configService.get<string>('JWT_SECRET') ||
+          'super-secret-jwt-key-student-management-2026',
       });
 
       const user = await this.userRepository.findById(payload.sub);

@@ -26,9 +26,9 @@ bot.start(async (ctx) => {
 bot.help(async (ctx) => {
   await ctx.reply(
     'ℹ️ *Yordam va Buyruqlar*:\n\n' +
-    '/start - Botni qayta ishga tushirish va menyu\n' +
-    '/dashboard - WebApp platformasini ochish\n' +
-    '/my_stats - Mening shaxsiy davomatim',
+      '/start - Botni qayta ishga tushirish va menyu\n' +
+      '/dashboard - WebApp platformasini ochish\n' +
+      '/my_stats - Mening shaxsiy davomatim',
     { parse_mode: 'Markdown' },
   );
 });

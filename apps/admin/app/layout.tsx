@@ -1,21 +1,19 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Super Admin Portal | Student Management Platform",
-  description: "Executive Management Portal",
+  title: 'Student Management Platform',
+  description: 'Telegram WebApp — Student Management Platform',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uz">
-      <body className="antialiased bg-slate-950 text-slate-100 min-h-screen">
-        {children}
-      </body>
+      <head>
+        <script src="https://telegram.org/js/telegram-web-app.js" async />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

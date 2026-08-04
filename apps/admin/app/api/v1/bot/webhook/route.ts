@@ -19,9 +19,7 @@ bot.start(async (ctx) => {
 
 bot.help(async (ctx) => {
   await ctx.reply(
-    'ℹ️ Yordam va Buyruqlar:\n\n' +
-    '/start - Botni qayta ishga tushirish\n' +
-    '/help - Yordam',
+    'ℹ️ Yordam va Buyruqlar:\n\n' + '/start - Botni qayta ishga tushirish\n' + '/help - Yordam',
   );
 });
 
@@ -30,9 +28,7 @@ bot.on('text', async (ctx) => {
   if (text === '📊 Mening Davomatim') {
     await ctx.reply('📊 Davomatingiz hisob-kitob qilinmoqda...');
   } else if (text === 'ℹ️ Yordam') {
-    await ctx.reply(
-      'ℹ️ Yordam:\n\n/start - Bosh menyu\n📱 App tugmasi - WebApp platformasi',
-    );
+    await ctx.reply('ℹ️ Yordam:\n\n/start - Bosh menyu\n📱 App tugmasi - WebApp platformasi');
   } else {
     await ctx.reply(
       'Platformadan foydalanish uchun quyidagi tugmani bosing:',

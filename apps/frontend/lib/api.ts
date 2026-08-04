@@ -16,8 +16,9 @@ export const setAuthToken = (token: string) => {
 export const api = {
   // Auth
   authTelegram: (initData: string) => apiClient.post('/auth/telegram', { initData }),
-  loginEmail: (email: string, password: string) => apiClient.post('/auth/login', { email, password }),
-  
+  loginEmail: (email: string, password: string) =>
+    apiClient.post('/auth/login', { email, password }),
+
   // Groups
   getGroups: () => apiClient.get('/groups'),
   getGroup: (id: string) => apiClient.get(`/groups/${id}`),
@@ -27,8 +28,11 @@ export const api = {
   getStudentStats: (studentId: string) => apiClient.get(`/attendance/student/${studentId}`),
 
   // Attendance
-  markAttendance: (groupId: string, date: string, attendances: Array<{ studentId: string; status: string }>) =>
-    apiClient.post('/attendance/mark', { groupId, date, attendances }),
+  markAttendance: (
+    groupId: string,
+    date: string,
+    attendances: Array<{ studentId: string; status: string }>,
+  ) => apiClient.post('/attendance/mark', { groupId, date, attendances }),
   getGroupAttendance: (groupId: string, date: string) =>
     apiClient.get(`/attendance/group/${groupId}`, { params: { date } }),
 };

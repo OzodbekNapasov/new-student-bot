@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, CheckCircle, XCircle, Clock, ShieldCheck, Users, Calendar, Award } from 'lucide-react';
+import {
+  User,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ShieldCheck,
+  Users,
+  Calendar,
+  Award,
+} from 'lucide-react';
 
 interface StudentItem {
   id: string;
@@ -13,7 +22,7 @@ interface StudentItem {
 export default function TelegramWebApp() {
   const [activeTab, setActiveTab] = useState<'attendance' | 'stats'>('attendance');
   const [currentDate] = useState(() => new Date().toISOString().split('T')[0]);
-  
+
   const [students, setStudents] = useState<StudentItem[]>([
     { id: '1', name: 'Jasur Bekmurodov', card: 'ST-2024-01', status: 'PRESENT' },
     { id: '2', name: 'Malika Raximova', card: 'ST-2024-02', status: 'PRESENT' },
@@ -99,7 +108,9 @@ export default function TelegramWebApp() {
             <div className="glass-card p-4 rounded-2xl border border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Guruh</span>
+                  <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                    Guruh
+                  </span>
                   <h2 className="text-lg font-bold">CS-101 (Kompyuter Ilmlari)</h2>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
@@ -204,8 +215,12 @@ export default function TelegramWebApp() {
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-3xl font-extrabold text-white">{attendancePercentage}%</span>
-                  <span className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">A'lo</span>
+                  <span className="text-3xl font-extrabold text-white">
+                    {attendancePercentage}%
+                  </span>
+                  <span className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">
+                    A'lo
+                  </span>
                 </div>
               </div>
 
@@ -221,7 +236,9 @@ export default function TelegramWebApp() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-200">Eng Yaxshi Guruh Mukofoti</p>
-                <p className="text-[11px] text-slate-400">Fakultetda eng yuqori davomatga ega top 3 talikda</p>
+                <p className="text-[11px] text-slate-400">
+                  Fakultetda eng yuqori davomatga ega top 3 talikda
+                </p>
               </div>
             </div>
           </div>

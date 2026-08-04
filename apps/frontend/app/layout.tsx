@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Student Management Platform",
-  description: "Enterprise Academic Management System (Telegram WebApp & Admin Panel)",
+  title: 'Student Management Platform',
+  description: 'Enterprise Academic Management System (Telegram WebApp & Admin Panel)',
 };
 
 export default function RootLayout({
@@ -16,9 +16,7 @@ export default function RootLayout({
       <head>
         <script src="https://telegram.org/js/telegram-web-app.js" async />
       </head>
-      <body className="antialiased bg-slate-950 text-slate-100 min-h-screen">
-        {children}
-      </body>
+      <body className="antialiased bg-slate-950 text-slate-100 min-h-screen">{children}</body>
     </html>
   );
 }

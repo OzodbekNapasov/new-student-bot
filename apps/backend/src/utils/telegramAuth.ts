@@ -17,7 +17,10 @@ interface ParsedInitData {
 /**
  * Validates initData received from Telegram WebApp using HMAC-SHA256
  */
-export function verifyTelegramInitData(initDataRaw: string, botToken: string): ParsedInitData | null {
+export function verifyTelegramInitData(
+  initDataRaw: string,
+  botToken: string,
+): ParsedInitData | null {
   try {
     if (!initDataRaw) return null;
 
@@ -37,10 +40,7 @@ export function verifyTelegramInitData(initDataRaw: string, botToken: string): P
     const dataCheckString = dataCheckArr.join('\n');
 
     // Generate secret key: HMAC-SHA256("WebAppData", botToken)
-    const secretKey = crypto
-      .createHmac('sha256', 'WebAppData')
-      .update(botToken)
-      .digest();
+    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
 
     // Calculate Hash: HMAC-SHA256(secretKey, dataCheckString)
     const calculatedHash = crypto

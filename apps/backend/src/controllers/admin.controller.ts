@@ -13,9 +13,12 @@ export async function getAdminStats(req: AuthRequest, res: Response) {
 
     const todayStr = new Date().toISOString().split('T')[0];
     const todayAttendanceCount = await prisma.attendance.count({ where: { date: todayStr } });
-    const todayPresentCount = await prisma.attendance.count({ where: { date: todayStr, status: 'PRESENT' } });
+    const todayPresentCount = await prisma.attendance.count({
+      where: { date: todayStr, status: 'PRESENT' },
+    });
 
-    const attendanceRate = todayAttendanceCount > 0 ? Math.round((todayPresentCount / todayAttendanceCount) * 100) : 0;
+    const attendanceRate =
+      todayAttendanceCount > 0 ? Math.round((todayPresentCount / todayAttendanceCount) * 100) : 0;
 
     return res.json({
       success: true,
@@ -40,7 +43,14 @@ export async function getAllGroups(req: AuthRequest, res: Response) {
     const groups = await prisma.group.findMany({
       include: {
         leader: {
-          select: { id: true, firstName: true, lastName: true, phone: true, email: true, telegramId: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            email: true,
+            telegramId: true,
+          },
         },
         _count: {
           select: { students: true, tasks: true },
@@ -66,7 +76,9 @@ export async function createGroup(req: AuthRequest, res: Response) {
     });
 
     if (existingGroup) {
-      return res.status(400).json({ success: false, message: 'Group with this name or code already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Group with this name or code already exists' });
     }
 
     const group = await prisma.group.create({
@@ -141,7 +153,9 @@ export async function createLeader(req: AuthRequest, res: Response) {
   try {
     const { firstName, lastName, phone, email, password, telegramId } = req.body;
     if (!firstName || !email || !password) {
-      return res.status(400).json({ success: false, message: 'First name, email, and password required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'First name, email, and password required' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -160,7 +174,12 @@ export async function createLeader(req: AuthRequest, res: Response) {
     return res.status(201).json({ success: true, leader });
   } catch (error) {
     console.error('Create leader error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to create leader. Email or Telegram ID may already exist.' });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Failed to create leader. Email or Telegram ID may already exist.',
+      });
   }
 }
 
@@ -169,7 +188,16 @@ export async function getAllStudents(req: AuthRequest, res: Response) {
   try {
     const students = await prisma.student.findMany({
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, phone: true, telegramId: true, username: true } },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            telegramId: true,
+            username: true,
+          },
+        },
         group: { select: { id: true, name: true, code: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -184,7 +212,9 @@ export async function createStudent(req: AuthRequest, res: Response) {
   try {
     const { firstName, lastName, phone, telegramId, groupId, studentCardNumber } = req.body;
     if (!firstName || !groupId) {
-      return res.status(400).json({ success: false, message: 'First name and group ID are required' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'First name and group ID are required' });
     }
 
     // Create User record for student
@@ -203,7 +233,8 @@ export async function createStudent(req: AuthRequest, res: Response) {
       data: {
         userId: user.id,
         groupId,
-        studentCardNumber: studentCardNumber || `STD-${Math.floor(100000 + Math.random() * 900000)}`,
+        studentCardNumber:
+          studentCardNumber || `STD-${Math.floor(100000 + Math.random() * 900000)}`,
       },
       include: {
         user: true,

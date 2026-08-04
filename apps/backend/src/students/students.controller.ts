@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
 import { CreateStudentDto, UpdateStudentDto, TransferStudentDto } from './dto/students.dto';
@@ -54,20 +44,14 @@ export class StudentsController {
   @Put(':id')
   @Roles('SUPER_ADMIN', 'GROUP_LEADER')
   @ApiOperation({ summary: 'Update student profile information' })
-  async updateStudent(
-    @Param('id') id: string,
-    @Body() dto: UpdateStudentDto,
-  ) {
+  async updateStudent(@Param('id') id: string, @Body() dto: UpdateStudentDto) {
     return this.studentsService.updateStudent(id, dto);
   }
 
   @Put(':id/transfer')
   @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Transfer student to another group (Super Admin only)' })
-  async transferStudent(
-    @Param('id') id: string,
-    @Body() dto: TransferStudentDto,
-  ) {
+  async transferStudent(@Param('id') id: string, @Body() dto: TransferStudentDto) {
     return this.studentsService.transferStudent(id, dto);
   }
 

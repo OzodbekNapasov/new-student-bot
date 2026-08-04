@@ -6,17 +6,7 @@ import { AttendanceRepository } from './attendance.repository';
 
 @Global()
 @Module({
-  providers: [
-    UserRepository,
-    GroupRepository,
-    StudentRepository,
-    AttendanceRepository,
-  ],
-  exports: [
-    UserRepository,
-    GroupRepository,
-    StudentRepository,
-    AttendanceRepository,
-  ],
+  providers: [UserRepository, GroupRepository, StudentRepository, AttendanceRepository],
+  exports: [UserRepository, GroupRepository, StudentRepository, AttendanceRepository],
 })
 export class RepositoriesModule {}
