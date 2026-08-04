@@ -183,4 +183,3 @@ export default function Home() {
   if (user.role === 'GROUP_LEADER') return <GroupLeaderPanel user={user} />;
   return <StudentPanel user={user} />;
 }
-
