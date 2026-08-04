@@ -104,7 +104,7 @@ export default function Home() {
           Botga /start yuboring va panelni oching.
         </p>
         <a
-          href="https://t.me/NewStudentManagerBot"
+          href="https://t.me/new_students_shtt_bot"
           style={{
             display: 'inline-block',
             background: 'linear-gradient(135deg, #0088cc, #00b4ff)',
