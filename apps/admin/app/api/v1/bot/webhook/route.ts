@@ -65,13 +65,15 @@ function getRoleKeyboard(role: string) {
   if (role === 'SUPER_ADMIN') {
     return Markup.keyboard([
       [Markup.button.text("📚 Guruhlar ro'yxati"), Markup.button.text('👥 Barcha talabalar')],
-      [Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl), Markup.button.text('🚪 Chiqish')],
+      [Markup.button.text('👤 Profil & Kirish Kodu'), Markup.button.webApp('🖥️ Admin Web Paneli', webAppUrl)],
+      [Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
   if (role === 'GROUP_LEADER') {
     return Markup.keyboard([
       [Markup.button.text("👥 Talabalar ro'yxati"), Markup.button.text("＋ Talaba qo'shish")],
-      [Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl), Markup.button.text('🚪 Chiqish')],
+      [Markup.button.text('👤 Profil & Login Kodi'), Markup.button.webApp('📋 Guruh Web Paneli', webAppUrl)],
+      [Markup.button.text('🚪 Chiqish')],
     ]).resize();
   }
   return Markup.keyboard([
@@ -104,7 +106,8 @@ async function sendGroupStudentsList(ctx: any, groupId: string, groupName: strin
     const fullName =
       `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
       `${s.user?.first_name || ''}`;
-    message += `${idx + 1}. *${fullName}*\n`;
+    const studentId = s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
+    message += `${idx + 1}. *${fullName}* (\`${studentId}\`)\n`;
   });
 
   message += `\n👥 *Jami:* ${sorted.length} nafar talaba`;
@@ -121,20 +124,25 @@ bot.start(async (ctx) => {
 
   const user = await upsertUser(tgUser);
 
-  // Check if admin
+  // 1. Check if SUPER_ADMIN
   if (String(tgUser.id) === '8135594558') {
     await supabase
       .from('users')
       .update({ role: 'SUPER_ADMIN' })
       .eq('telegram_id', String(tgUser.id));
-    await ctx.reply(`👑 *Xush kelibsiz, Admin!*\n\nKerakli bo'limni tanlang:`, {
-      parse_mode: 'Markdown',
-      ...getRoleKeyboard('SUPER_ADMIN'),
-    });
+
+    await ctx.reply(
+      `👑 *Xush kelibsiz, Super Admin!* 👋\n\n` +
+        `🆔 *Sizning Telegram ID:* \`${tgUser.id}\`\n` +
+        `🔑 *Rolingiz:* SUPER ADMIN (Bosh Boshqaruvchi)\n` +
+        `🌐 *Web Admin Panel:* ${webAppUrl}\n\n` +
+        `Kerakli bo'limni tanlang:`,
+      { parse_mode: 'Markdown', ...getRoleKeyboard('SUPER_ADMIN') },
+    );
     return;
   }
 
-  // If GROUP_LEADER
+  // 2. If GROUP_LEADER
   if (user?.role === 'GROUP_LEADER') {
     const { data: group } = await supabase
       .from('groups')
@@ -145,19 +153,24 @@ bot.start(async (ctx) => {
     const leaderName =
       `${user.first_name || tgUser.first_name} ${user.last_name || tgUser.last_name || ''}`.trim();
     const groupText = group ? `*${group.name}* (${group.code})` : 'Biriktirilmagan';
+    const loginCode = group?.login_code ? `\`${group.login_code}\`` : 'Mavjud emas';
     const studentCount = group?.students?.[0]?.count || 0;
 
     await ctx.reply(
       `Salom, *${leaderName}*! 👋\n\n` +
+        `🆔 *Sizning Telegram ID-ingiz:* \`${tgUser.id}\`\n` +
         `👨‍🏫 *Guruhingiz:* ${groupText}\n` +
-        `👥 *Guruhdagi talabalar soni:* ${studentCount} nafar\n\n` +
+        `🔑 *Sizning Web Login Kodingiz:* ${loginCode}\n` +
+        `👥 *Guruhdagi talabalar:* ${studentCount} nafar\n` +
+        `🌐 *Web Panel Havolasi:* ${webAppUrl}\n\n` +
+        `💡 _Brauzer orqali Web panelga kirishda ushbu Telegram ID va Login kodingizdan foydalaning!_\n\n` +
         `Kerakli bo'limni tanlang:`,
       { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
     );
     return;
   }
 
-  // If STUDENT — check if belongs to a group
+  // 3. If STUDENT
   if (user?.role === 'STUDENT') {
     const { data: studentRecord } = await supabase
       .from('students')
@@ -166,10 +179,12 @@ bot.start(async (ctx) => {
       .single();
 
     if (studentRecord) {
-      await ctx.reply(`🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
-        parse_mode: 'Markdown',
-        ...getRoleKeyboard('STUDENT'),
-      });
+      await ctx.reply(
+        `🎓 *Xush kelibsiz, ${tgUser.first_name}!*\n\n` +
+          `🆔 *Sizning Telegram ID-ingiz:* \`${tgUser.id}\`\n\n` +
+          `Kerakli bo'limni tanlang:`,
+        { parse_mode: 'Markdown', ...getRoleKeyboard('STUDENT') },
+      );
       return;
     }
   }
@@ -178,8 +193,9 @@ bot.start(async (ctx) => {
   await setState(String(tgUser.id), 'WAITING_LOGIN_CODE');
   await ctx.reply(
     `Assalomu alaykum, ${tgUser.first_name}! 👋\n\n` +
-      `🔑 Tizimga kirish uchun *login kodingizni* yuboring.\n\n` +
-      `📌 Login kodni guruh rahbari bo'lsangiz — admin beradi.\n` +
+      `🆔 *Sizning Telegram ID-ingiz:* \`${tgUser.id}\`\n\n` +
+      `🔑 Tizimga kirish uchun *Guruh Login Kodingizni* yuboring.\n\n` +
+      `📌 Login kod guruh rahbariga admin tomonidan beriladi.\n` +
       `📌 Qayta kirish uchun *🔑 Kirish* tugmasini bosing.`,
     { parse_mode: 'Markdown', ...getRoleKeyboard('STUDENT') },
   );
@@ -189,12 +205,69 @@ bot.start(async (ctx) => {
 // Button Handlers
 // ============================================================
 
+// 👤 Profil & Login Kodi / Kirish Kodu / Profilim
+bot.hears(['👤 Profil & Login Kodi', '👤 Profil & Kirish Kodu', '👤 Profilim'], async (ctx) => {
+  const tgUser = ctx.from;
+  if (!tgUser) return;
+  const telegramId = String(tgUser.id);
+  const user = await getUser(telegramId);
+
+  if (telegramId === '8135594558' || user?.role === 'SUPER_ADMIN') {
+    await ctx.reply(
+      `👑 *Super Admin Profili va Ma'lumotlari:*\n\n` +
+        `👤 *Ism:* ${tgUser.first_name} ${tgUser.last_name || ''}\n` +
+        `🆔 *Telegram ID:* \`${tgUser.id}\`\n` +
+        `🔑 *Rolingiz:* SUPER ADMIN\n` +
+        `🌐 *Web Admin Panel:* ${webAppUrl}\n\n` +
+        `💡 _Web Admin paneliga Telegram ID orqali bevosita kiring._`,
+      { parse_mode: 'Markdown' },
+    );
+    return;
+  }
+
+  if (user?.role === 'GROUP_LEADER') {
+    const { data: group } = await supabase
+      .from('groups')
+      .select('*, students(count)')
+      .eq('leader_id', user.id)
+      .single();
+
+    const leaderName =
+      `${user.first_name || tgUser.first_name} ${user.last_name || tgUser.last_name || ''}`.trim();
+    const groupText = group ? `*${group.name}* (${group.code})` : 'Biriktirilmagan';
+    const loginCode = group?.login_code ? `\`${group.login_code}\`` : 'Mavjud emas';
+    const studentCount = group?.students?.[0]?.count || 0;
+
+    await ctx.reply(
+      `👨‍🏫 *O'qituvchi (Guruh Rahbari) Profili va Kirish Kodlari:*\n\n` +
+        `👤 *Ismingiz:* ${leaderName}\n` +
+        `🆔 *Telegram ID-ingiz:* \`${tgUser.id}\`\n` +
+        `📚 *Guruhingiz:* ${groupText}\n` +
+        `🔑 *Web Login Kodingiz:* ${loginCode}\n` +
+        `👥 *Guruhdagi talabalar:* ${studentCount} nafar\n` +
+        `🌐 *Web Panel Havolasi:* ${webAppUrl}\n\n` +
+        `💡 _Brauzerdan Web platformaga kirishda ushbu Telegram ID va Login kodingizni kiriting!_`,
+      { parse_mode: 'Markdown' },
+    );
+    return;
+  }
+
+  await ctx.reply(
+    `👤 *Sizning Profilingiz:*\n\n` +
+      `🆔 *Telegram ID-ingiz:* \`${tgUser.id}\`\n` +
+      `📌 Tizimga guruh kodingiz orqali kirishingiz mumkin.\n` +
+      `🌐 *Web Panel:* ${webAppUrl}`,
+    { parse_mode: 'Markdown' },
+  );
+});
+
 // 🔑 Kirish
 bot.hears('🔑 Kirish', async (ctx) => {
   const telegramId = String(ctx.from.id);
   await setState(telegramId, 'WAITING_LOGIN_CODE');
   await ctx.reply(
-    `🔑 *Login kodingizni yuboring:*\n\n` +
+    `🆔 *Sizning Telegram ID:* \`${telegramId}\`\n\n` +
+      `🔑 *Login kodingizni yuboring:*\n\n` +
       `📌 Rahbar bo'lsangiz — admin tomonidan berilgan 6 xonali login kodni kiriting (masalan: \`AB3K7Z\`).`,
     { parse_mode: 'Markdown' },
   );
@@ -328,7 +401,8 @@ bot.hears('👥 Barcha talabalar', async (ctx) => {
     const name =
       `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
       `${s.user?.first_name || ''}`;
-    text += `${idx + 1}. *${name}* — ${s.group?.name || 'Guruhsiz'}\n`;
+    const studentId = s.student_card_number || `STU-${(s.id || '').slice(0, 8).toUpperCase()}`;
+    text += `${idx + 1}. *${name}* (\`${studentId}\`) — ${s.group?.name || 'Guruhsiz'}\n`;
   });
 
   text += `\n👥 *Jami:* ${sorted.length} nafar talaba`;
@@ -435,9 +509,12 @@ bot.on('text', async (ctx) => {
     await ctx.reply(
       `Salom, *${leaderName}*! 👋\n\n` +
         `✅ *Muvaffaqiyatli kirish!*\n` +
+        `🆔 *Sizning Telegram ID:* \`${telegramId}\`\n` +
         `👨‍🏫 *Guruhingiz:* *${group.name}* (${group.code})\n` +
-        `👥 *Guruhdagi talabalar soni:* ${studentCount} nafar\n\n` +
-        `Quyidagi tugmalar orqali guruh talabalarini boshqarishingiz mumkin:`,
+        `🔑 *Sizning Web Login Kodingiz:* \`${code}\`\n` +
+        `👥 *Guruhdagi talabalar:* ${studentCount} nafar\n` +
+        `🌐 *Web Panel Havolasi:* ${webAppUrl}\n\n` +
+        `💡 _Brauzer orqali Web platformaga kirishda ushbu Telegram ID va Login kodingizdan foydalaning!_`,
       { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
     );
     return;
@@ -501,7 +578,11 @@ bot.on('text', async (ctx) => {
     await ctx.reply("Kerakli bo'limni tanlang:", getRoleKeyboard(user.role));
   } else {
     await setState(telegramId, 'WAITING_LOGIN_CODE');
-    await ctx.reply('🔑 Login kodingizni yuboring:', getRoleKeyboard('STUDENT'));
+    await ctx.reply(
+      `🆔 *Sizning Telegram ID-ingiz:* \`${telegramId}\`\n\n` +
+        `🔑 Login kodingizni yuboring:`,
+      getRoleKeyboard('STUDENT'),
+    );
   }
 });
 
@@ -522,6 +603,6 @@ export async function POST(req: Request) {
 export async function GET() {
   return NextResponse.json({
     status: 'Telegram Bot Webhook Active ✅',
-    version: '4.0-bot-login-logout',
+    version: '5.0-bot-tg-id-login-code-prompt',
   });
 }
