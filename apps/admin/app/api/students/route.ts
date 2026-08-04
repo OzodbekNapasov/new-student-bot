@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   let query = supabase
     .from('students')
     .select(
-      '*, user:users(id, telegram_id, first_name, last_name, username), group:groups(id, name, code)',
+      '*, user:users(id, telegram_id, first_name, last_name, username, photo_url, created_at, updated_at), group:groups(id, name, code)',
     );
 
   if (groupId) query = query.eq('group_id', groupId);
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
         { user_id: user.id, group_id, student_card_number: student_card_number || '' },
         { onConflict: 'user_id,group_id' },
       )
-      .select('*, user:users(id, telegram_id, first_name, last_name)')
+      .select('*, user:users(id, telegram_id, first_name, last_name, photo_url, created_at, updated_at)')
       .single();
 
     if (studentErr) return NextResponse.json({ error: studentErr.message }, { status: 500 });

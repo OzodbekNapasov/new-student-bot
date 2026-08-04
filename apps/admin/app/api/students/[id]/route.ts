@@ -43,16 +43,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (student_card_number !== undefined) updates.student_card_number = student_card_number;
     if (is_active !== undefined) updates.is_active = is_active;
 
-    const { data, error } = await supabase
-      .from('students')
-      .update(updates)
-      .eq('id', id)
-      .select(
-        '*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)',
-      )
-      .single();
+    let studentData: any = null;
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (Object.keys(updates).length > 0) {
+      const { data, error } = await supabase
+        .from('students')
+        .update(updates)
+        .eq('id', id)
+        .select(
+          '*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)',
+        )
+        .single();
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      studentData = data;
+    } else {
+      // If only user (first_name/last_name) was updated, fetch updated student
+      const { data, error } = await supabase
+        .from('students')
+        .select(
+          '*, user:users(id, telegram_id, first_name, last_name, photo_url, updated_at), group:groups(id, name, code)',
+        )
+        .eq('id', id)
+        .single();
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      studentData = data;
+    }
 
     // If group_id changed, record transfer event log inside user's photo_url JSON field
     if (
@@ -99,7 +116,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         .eq('id', existingStudent.user.id);
     }
 
-    return NextResponse.json({ student: data });
+    return NextResponse.json({ student: studentData });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
