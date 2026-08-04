@@ -135,10 +135,23 @@ bot.start(async (ctx) => {
 
   // If GROUP_LEADER
   if (user?.role === 'GROUP_LEADER') {
-    await ctx.reply(`👨‍🏫 *Xush kelibsiz, ${tgUser.first_name}!*\n\nKerakli bo'limni tanlang:`, {
-      parse_mode: 'Markdown',
-      ...getRoleKeyboard('GROUP_LEADER'),
-    });
+    const { data: group } = await supabase
+      .from('groups')
+      .select('*, students(count)')
+      .eq('leader_id', user.id)
+      .single();
+
+    const leaderName = `${user.first_name || tgUser.first_name} ${user.last_name || tgUser.last_name || ''}`.trim();
+    const groupText = group ? `*${group.name}* (${group.code})` : 'Biriktirilmagan';
+    const studentCount = group?.students?.[0]?.count || 0;
+
+    await ctx.reply(
+      `Salom, *${leaderName}*! 👋\n\n` +
+        `👨‍🏫 *Guruhingiz:* ${groupText}\n` +
+        `👥 *Guruhdagi talabalar soni:* ${studentCount} nafar\n\n` +
+        `Kerakli bo'limni tanlang:`,
+      { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
+    );
     return;
   }
 
@@ -403,12 +416,23 @@ bot.on('text', async (ctx) => {
       .update({ leader_id: user?.id, updated_at: new Date().toISOString() })
       .eq('id', group.id);
 
+    const { data: updatedGroup } = await supabase
+      .from('groups')
+      .select('*, students(count)')
+      .eq('id', group.id)
+      .single();
+
+    const studentCount = updatedGroup?.students?.[0]?.count || 0;
+    const leaderName = `${user?.first_name || tgUser.first_name} ${user?.last_name || tgUser.last_name || ''}`.trim();
+
     await setState(telegramId, null);
 
     await ctx.reply(
-      `✅ *Muvaffaqiyatli kirish!*\n\n` +
-        `👨‍🏫 Siz *${group.name}* guruhining rahbari sifatida tizimga kirdingiz.\n\n` +
-        `Quydagi tugmalar orqali botdan foydalanishingiz mumkin:`,
+      `Salom, *${leaderName}*! 👋\n\n` +
+        `✅ *Muvaffaqiyatli kirish!*\n` +
+        `👨‍🏫 *Guruhingiz:* *${group.name}* (${group.code})\n` +
+        `👥 *Guruhdagi talabalar soni:* ${studentCount} nafar\n\n` +
+        `Quyidagi tugmalar orqali guruh talabalarini boshqarishingiz mumkin:`,
       { parse_mode: 'Markdown', ...getRoleKeyboard('GROUP_LEADER') },
     );
     return;

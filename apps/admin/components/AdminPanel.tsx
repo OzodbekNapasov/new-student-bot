@@ -45,7 +45,9 @@ function exportStudentsToExcel(students: any[], title: string = 'Talabalar_Ro_yx
   `;
 
   students.forEach((s, i) => {
-    const fullName = `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() || `${s.user?.first_name || ''}`;
+    const fullName =
+      `${s.user?.last_name || ''} ${s.user?.first_name || ''}`.trim() ||
+      `${s.user?.first_name || ''}`;
     const groupName = s.group?.name || s.group_name || 'Guruhsiz';
     tableHtml += `
       <tr>
@@ -415,7 +417,8 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                 <span style={{ fontSize: 24 }}>{isExpanded ? '📂' : '📁'}</span>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-                    {group.name} <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
+                    {group.name}{' '}
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({group.code})</span>
                   </h3>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     👨‍🏫 Rahbar: <b>{leaderName}</b>
@@ -441,7 +444,9 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
 
             {/* Collapsible Content Body */}
             {isExpanded && (
-              <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}>
+              <div
+                style={{ padding: 16, borderTop: '1px solid var(--border)', background: '#0f172a' }}
+              >
                 <div
                   style={{
                     display: 'flex',
@@ -470,26 +475,66 @@ function AccordionStudentsView({ groups }: { groups: Group[] }) {
                     <div className="spinner" style={{ margin: '0 auto' }} />
                   </div>
                 ) : students.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
+                  <p
+                    style={{
+                      textAlign: 'center',
+                      color: 'var(--text-muted)',
+                      fontSize: 13,
+                      padding: 20,
+                    }}
+                  >
                     Ushbu guruhda hali talabalar yo'q.
                   </p>
                 ) : (
-                  <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}>
+                  <div
+                    style={{
+                      overflowX: 'auto',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                    }}
+                  >
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.06)', textAlign: 'left' }}>
-                          <th style={{ padding: '10px 14px', width: 60, borderBottom: '1px solid var(--border)' }}>T/R</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>Guruhi</th>
-                          <th style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              width: 60,
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            T/R
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
+                            Guruhi
+                          </th>
+                          <th
+                            style={{
+                              padding: '10px 14px',
+                              borderBottom: '1px solid var(--border)',
+                            }}
+                          >
                             Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh)
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.map((s, idx) => (
-                          <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>{group.name}</td>
+                          <tr
+                            key={s.id}
+                            style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}
+                          >
+                            <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                              {idx + 1}
+                            </td>
+                            <td style={{ padding: '10px 14px', color: '#60a5fa', fontWeight: 600 }}>
+                              {group.name}
+                            </td>
                             <td style={{ padding: '10px 14px', fontWeight: 600 }}>
                               {s.user?.first_name} {s.user?.last_name}
                             </td>
@@ -596,7 +641,9 @@ function GroupCard({
         </div>
         <button
           className="btn btn-ghost btn-sm"
-          style={{ color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)' }}
+          style={{
+            color: copiedCode === group.login_code ? '#34d399' : 'var(--accent-blue-light)',
+          }}
           onClick={() => onCopy(group.login_code)}
         >
           {copiedCode === group.login_code ? '✓ Nusxalandi' : '📋 Nusxala'}
@@ -725,7 +772,14 @@ function GroupDetailModal({
             marginBottom: 16,
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 6,
+            }}
+          >
             <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
               🔑 Rahbar uchun Login Kodi
             </p>
@@ -748,7 +802,8 @@ function GroupDetailModal({
             <button
               className="btn btn-sm"
               style={{
-                background: copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+                background:
+                  copiedCode === group.login_code ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
                 color: copiedCode === group.login_code ? '#34d399' : '#fbbf24',
                 border: 'none',
               }}
@@ -878,7 +933,13 @@ function GroupDetailModal({
 // Add Group Modal with Leader Name Field
 // ============================================================
 function AddGroupModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [form, setForm] = useState({ name: '', code: '', faculty: '', academic_year: '', leader_name: '' });
+  const [form, setForm] = useState({
+    name: '',
+    code: '',
+    faculty: '',
+    academic_year: '',
+    leader_name: '',
+  });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
 
@@ -1087,7 +1148,9 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <label className="form-label">
+                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+              </label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"

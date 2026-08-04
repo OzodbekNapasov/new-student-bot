@@ -602,7 +602,9 @@ function AddStudentModal({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'single' ? (
             <div className="form-group">
-              <label className="form-label">Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *</label>
+              <label className="form-label">
+                Talabaning Familiyasi, Ismi va Sharifi (F.I.Sh) *
+              </label>
               <input
                 className="input"
                 placeholder="Masalan: Toshmatov Jasur Alisherovich"

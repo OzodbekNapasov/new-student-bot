@@ -77,7 +77,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         const firstName = parts.slice(1).join(' ') || lastName;
 
         // Fetch current group to check if leader user exists
-        const { data: grp } = await supabase.from('groups').select('leader_id').eq('id', groupId).single();
+        const { data: grp } = await supabase
+          .from('groups')
+          .select('leader_id')
+          .eq('id', groupId)
+          .single();
 
         if (grp?.leader_id) {
           // Update existing leader user profile

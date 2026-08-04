@@ -14,12 +14,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const cleanNames = names
-      .map((n: string) => n.trim())
-      .filter((n: string) => n.length > 0);
+    const cleanNames = names.map((n: string) => n.trim()).filter((n: string) => n.length > 0);
 
     if (cleanNames.length === 0) {
-      return NextResponse.json({ error: 'Talaba ismlari bo\'sh bo\'lishi mumkin emas' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Talaba ismlari bo'sh bo'lishi mumkin emas" },
+        { status: 400 },
+      );
     }
 
     const addedStudents = [];
